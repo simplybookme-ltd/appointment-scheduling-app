@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="8191" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="8154"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionReusableView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="U6b-Vx-4bR" customClass="TextCollectionReusableView">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="50"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rGJ-Ir-FEi">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="21"/>
+                    <fontDescription key="fontDescription" type="system" weight="light" pointSize="17"/>
+                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <constraints>
+                <constraint firstItem="rGJ-Ir-FEi" firstAttribute="top" secondItem="U6b-Vx-4bR" secondAttribute="top" id="0EB-8V-okz"/>
+                <constraint firstItem="rGJ-Ir-FEi" firstAttribute="centerX" secondItem="U6b-Vx-4bR" secondAttribute="centerX" id="2cy-tC-xte"/>
+                <constraint firstAttribute="trailing" secondItem="rGJ-Ir-FEi" secondAttribute="trailing" id="VER-yx-KJ3"/>
+                <constraint firstItem="rGJ-Ir-FEi" firstAttribute="leading" secondItem="U6b-Vx-4bR" secondAttribute="leading" id="ZbV-oI-zL5"/>
+            </constraints>
+            <variation key="default">
+                <mask key="constraints">
+                    <exclude reference="2cy-tC-xte"/>
+                </mask>
+            </variation>
+            <connections>
+                <outlet property="textLabel" destination="rGJ-Ir-FEi" id="KJC-lF-Pne"/>
+            </connections>
+        </collectionReusableView>
+    </objects>
+</document>
