@@ -6,8 +6,8 @@
 
 Full description of API used in this application you can find here:
 
-[http://wiki.simplybook.me/index.php/API](http://wiki.simplybook.me/index.php/API)
-[Interactive API Explorer](https://simplybook.me/api/explorer)
+* [http://wiki.simplybook.me/index.php/API](http://wiki.simplybook.me/index.php/API)
+* [Interactive API Explorer](https://simplybook.me/api/explorer)
 
 ##License
 
