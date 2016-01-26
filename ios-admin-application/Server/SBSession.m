@@ -40,6 +40,7 @@
 #import "SBPluginApproveGetPendingBookingsCountRequest.h"
 #import "SBPluginApproveGetPendingBookingsRequest.h"
 #import "SBPluginsRepository.h"
+#import "SBGetCompanyParamRequest.h"
 
 #define SBSessionStorageKeyForCompanyLogin(companyLogin) ([NSString stringWithFormat:@"SBSessionStorageKey-%@", (companyLogin)])
 
@@ -158,15 +159,16 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
             if (!authResponse.error) {
                 self.token = authResponse.result;
                 [self writeTokenToStorage];
-                SBRequest *copy = [request copyWithToken:self.token];
-                copy.delegate = request.delegate;
-                for (NSOperation *duplicate in request.dependencies) {
-                    NSUInteger index = [queue.operations indexOfObject:duplicate];
-                    if (index != NSNotFound) {
-                        [queue.operations[index] cancel];
+                NSArray<SBRequest *> *operations = queue.operations;
+                [queue cancelAllOperations];
+                SBRequest *copy = [request copyWithToken:self.token]; // request already not in queue
+                [self performReqeust:copy];
+                for (SBRequest *operation in operations) {
+                    if (![operation isKindOfClass:[SBGetUserTokenRequest class]]) {
+                        SBRequest *copy = [operation copyWithToken:self.token];
+                        [self performReqeust:copy];
                     }
                 }
-                [self performReqeust:copy];
             }
             else {
                 [[SBSessionManager sharedManager] endSession:self];
@@ -300,7 +302,8 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
 
 - (SBRequest *)addClientWithName:(NSString *)name phone:(NSString *)phone email:(NSString *)email callback:(SBRequestCallback)callback
 {
-    NSParameterAssert(name != nil && ![name isEqualToString:@""]);
+    NSParameterAssert(phone != nil && ![phone isEqualToString:@""]);
+    NSParameterAssert(email != nil && ![email isEqualToString:@""]);
     SBAddClientRequest *request = [[SBAddClientRequest alloc] initWithToken:self.token comanyLogin:self.companyLogin];
     request.clientName = name;
     request.phone = phone;
@@ -353,6 +356,17 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     NSParameterAssert(deviceToken != nil);
     SBDeleteDeviceToken *request = [[SBDeleteDeviceToken alloc] initWithToken:self.token comanyLogin:self.companyLogin];
     request.deviceToken = deviceToken;
+    request.delegate = self;
+    request.callback = callback;
+    return request;
+}
+
+- (SBRequest *)getCompanyParam:(NSString *)paramKey callback:(SBRequestCallback)callback
+{
+    NSParameterAssert(paramKey != nil);
+    NSParameterAssert(![paramKey isEqualToString:@""]);
+    SBGetCompanyParamRequest *request = [[SBGetCompanyParamRequest alloc] initWithToken:self.token comanyLogin:self.companyLogin];
+    request.paramKey = paramKey;
     request.delegate = self;
     request.callback = callback;
     return request;

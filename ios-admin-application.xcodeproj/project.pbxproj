@@ -77,6 +77,7 @@
 		B04945411B984A2E00F7B9D1 /* SBSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = B04945401B984A2E00F7B9D1 /* SBSettings.m */; };
 		B04945441B984F4900F7B9D1 /* ACHSwitchTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B04945431B984F4900F7B9D1 /* ACHSwitchTableViewCell.m */; };
 		B049454A1B98927000F7B9D1 /* InitToLoginSegue.m in Sources */ = {isa = PBXBuildFile; fileRef = B04945491B98927000F7B9D1 /* InitToLoginSegue.m */; };
+		B04AE2601C1EFA8D002A6E24 /* SBGetCompanyParamRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B04AE25F1C1EFA8D002A6E24 /* SBGetCompanyParamRequest.m */; };
 		B04DF7DC1BB2A80A00046971 /* SBAdditionalFieldValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = B00FB04A1B97298A0081ADB4 /* SBAdditionalFieldValidator.m */; };
 		B04DF7DD1BB2A84500046971 /* SBValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = B00FB0441B97253D0081ADB4 /* SBValidator.m */; };
 		B04DF7DF1BB2A84500046971 /* SBServerIDValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = B00FB04D1B972B1C0081ADB4 /* SBServerIDValidator.m */; };
@@ -339,6 +340,8 @@
 		B04945431B984F4900F7B9D1 /* ACHSwitchTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACHSwitchTableViewCell.m; sourceTree = "<group>"; };
 		B04945481B98927000F7B9D1 /* InitToLoginSegue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitToLoginSegue.h; sourceTree = "<group>"; };
 		B04945491B98927000F7B9D1 /* InitToLoginSegue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitToLoginSegue.m; sourceTree = "<group>"; };
+		B04AE25E1C1EFA8D002A6E24 /* SBGetCompanyParamRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBGetCompanyParamRequest.h; sourceTree = "<group>"; };
+		B04AE25F1C1EFA8D002A6E24 /* SBGetCompanyParamRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBGetCompanyParamRequest.m; sourceTree = "<group>"; };
 		B04DF7E01BB2CE1D00046971 /* SBGetWorkloadRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBGetWorkloadRequest.h; sourceTree = "<group>"; };
 		B04DF7E11BB2CE1D00046971 /* SBGetWorkloadRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBGetWorkloadRequest.m; sourceTree = "<group>"; };
 		B05CFDDA1BC67C7A00D26E52 /* SBAdditionalField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBAdditionalField.h; sourceTree = "<group>"; };
@@ -808,6 +811,8 @@
 				B0AA7C6C1BCD4FA5009D4DE1 /* SBIsPluginActivatedRequest.h */,
 				B0AA7C6D1BCD4FA5009D4DE1 /* SBIsPluginActivatedRequest.m */,
 				B0E4C9B11BFA1A2800013FAB /* Approve Booking Plugin */,
+				B04AE25E1C1EFA8D002A6E24 /* SBGetCompanyParamRequest.h */,
+				B04AE25F1C1EFA8D002A6E24 /* SBGetCompanyParamRequest.m */,
 			);
 			path = Requests;
 			sourceTree = "<group>";
@@ -1362,6 +1367,7 @@
 				B0F90A6A1B838B0400929D3C /* ACHTextFieldTableViewCell.m in Sources */,
 				B04945441B984F4900F7B9D1 /* ACHSwitchTableViewCell.m in Sources */,
 				B0A681C31B90727900E8BBAF /* FXKeychain.m in Sources */,
+				B04AE2601C1EFA8D002A6E24 /* SBGetCompanyParamRequest.m in Sources */,
 				B0A106AC1B8478FB00E58C1C /* SBGetUserTokenRequest.m in Sources */,
 				B00915301B95F52D006123D5 /* AddClientViewController.m in Sources */,
 				B00FB0511B9733390081ADB4 /* SBBookRequest.m in Sources */,

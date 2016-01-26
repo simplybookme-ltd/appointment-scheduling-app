@@ -12,6 +12,7 @@
 #import "SBSession.h"
 #import "NSError+SimplyBook.h"
 #import "SBRegExpValidator.h"
+#import "SBCompanyInfo.h"
 
 NS_ENUM(NSInteger, AddClientFormFields)
 {
@@ -28,8 +29,16 @@ NS_ENUM(NSInteger, AddClientFormFields)
 {
     HMDiallingCode *diallingCodeDetector;
     NSString *diallingCode;
-    SBRequest *addClientRequest;
+    NSMutableArray *pendingRequests;
+    NSString *requiredFields;
+    NSString *phone;
+    NSString *email;
 }
+
+@property (nonatomic, strong) SBValidator *notEmptyStringValidarot;
+@property (nonatomic, strong) SBValidator *emailValidator;
+@property (nonatomic, strong) SBValidator *phoneValidator;
+
 @end
 
 @implementation AddClientViewController
@@ -44,6 +53,22 @@ NS_ENUM(NSInteger, AddClientFormFields)
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     self.tableView.estimatedRowHeight = 44;
     [self.tableView registerNib:[UINib nibWithNibName:@"ACHTextFieldTableViewCell" bundle:nil] forCellReuseIdentifier:@"cell"];
+    
+    pendingRequests = [NSMutableArray array];
+    SBRequest *request = [[SBSession defaultSession] getCompanyParam:kSBCompanyClientRequiredFieldsParamKey callback:^(SBResponse<NSString *> * _Nonnull response) {
+        [pendingRequests removeObject:response.requestGUID];
+        if (!response.error) {
+            requiredFields = response.result;
+        }
+        else {
+            // TODO: handle error
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.navigationController popViewControllerAnimated:YES];
+            });
+        }
+    }];
+    [pendingRequests addObject:request.GUID];
+    [[SBSession defaultSession] performReqeust:request];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -63,8 +88,8 @@ NS_ENUM(NSInteger, AddClientFormFields)
 
 - (IBAction)cancelAction:(id)sender
 {
-    if (addClientRequest) {
-        [[SBSession defaultSession] cancelRequestWithID:addClientRequest.GUID];
+    if (pendingRequests.count) {
+        [[SBSession defaultSession] cancelRequests:pendingRequests];
     }
     [self.navigationController popViewControllerAnimated:YES];
 }
@@ -74,12 +99,12 @@ NS_ENUM(NSInteger, AddClientFormFields)
     if ([self textFieldsValidation]) {
         self.navigationItem.rightBarButtonItem.enabled = NO;
         NSString *name = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientNameFormField inSection:0]] text];
-        NSString *phone = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientPhoneFormField inSection:0]] text];
-        NSString *email = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientEmailFormField inSection:0]] text];
-        addClientRequest = [[SBSession defaultSession] addClientWithName:name phone:phone email:email
+        NSString *_phone = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientPhoneFormField inSection:0]] text];
+        NSString *_email = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientEmailFormField inSection:0]] text];
+        SBRequest *request = [[SBSession defaultSession] addClientWithName:name phone:_phone email:_email
                                                                   callback:^(SBResponse *response)
         {
-            addClientRequest = nil;
+            [pendingRequests removeObject:response.requestGUID];
             if (response.error) {
                 if (response.canceled) {
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -101,7 +126,7 @@ NS_ENUM(NSInteger, AddClientFormFields)
             else {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     if (self.clientCreatedHandler) {
-                        self.clientCreatedHandler(@{@"id" : response.result, @"name" : name, @"phone" : phone, @"email" : email});
+                        self.clientCreatedHandler(@{@"id" : response.result, @"name" : name, @"phone" : _phone, @"email" : _email});
                     }
                     else {
                         [self.navigationController popViewControllerAnimated:YES];
@@ -110,14 +135,15 @@ NS_ENUM(NSInteger, AddClientFormFields)
             }
         }];
         [self.activityView startAnimating];
-        [[SBSession defaultSession] performReqeust:addClientRequest];
+        [pendingRequests addObject:request.GUID];
+        [[SBSession defaultSession] performReqeust:request];
     }
 }
 
 #pragma mark - textField validation
 
 - (UIAlertView *)alertWithTitle:(NSString*)title message:(NSString*)message {
-    UIAlertView *alert =[[UIAlertView alloc ] initWithTitle:title
+    UIAlertView *alert = [[UIAlertView alloc ] initWithTitle:title
                                                     message:message
                                                    delegate:self
                                           cancelButtonTitle:@"Ok"
@@ -125,36 +151,87 @@ NS_ENUM(NSInteger, AddClientFormFields)
     return alert;
 }
 
-- (BOOL)textFieldsValidation {
-    NSString *name = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientNameFormField inSection:0]] text];
-    SBValidator *notEmptyStringValidarot = [SBValidator notEmptyStringValidator];
-    if (![notEmptyStringValidarot isValid:name]) {
-        UIAlertView *alert = [self alertWithTitle:NSLS(@"Invalid Name", @"") message:NSLS(@"Please enter client name.", @"")];
-        [alert show];
-        return NO;
+- (SBValidator *)notEmptyStringValidarot
+{
+    if (!_notEmptyStringValidarot) {
+        _notEmptyStringValidarot = [SBValidator notEmptyStringValidator];
     }
-    
+    return _notEmptyStringValidarot;
+}
+
+- (SBValidator *)emailValidator
+{
+    if (!_emailValidator) {
+        _emailValidator = [SBRegExpValidator emailAddressValidator];
+    }
+    return _emailValidator;
+}
+
+- (SBValidator *)phoneValidator
+{
+    if (!_phoneValidator) {
+        _phoneValidator = [SBRegExpValidator phoneNumberValidator:YES];
+    }
+    return _phoneValidator;
+}
+
+- (BOOL)textFieldsValidation
+{
+    NSAssert(requiredFields != nil, @"information about required fields not loaded");
+    NSAssert(![requiredFields isEqualToString:@""], @"information about required fields not loaded");
     NSString *emailString = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientEmailFormField inSection:0]] text];
-    SBValidator *emailValidator = [SBRegExpValidator emailAddressValidator];
-    if ([notEmptyStringValidarot isValid:emailString]) {
-        if(![emailValidator isValid:emailString]) {
+    if ([requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValueEmail]
+        || [requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValueEmailAndPhone])
+    {
+        if (![self.notEmptyStringValidarot isValid:emailString]) {
+            UIAlertView *alert = [self alertWithTitle:NSLS(@"Invalid Email", @"") message:NSLS(@"Email address is required. Please enter valid email address.", @"")];
+            [alert show];
+            return NO;
+        } else if(![self.emailValidator isValid:emailString]) {
             UIAlertView *alert = [self alertWithTitle:NSLS(@"Invalid Email", @"") message:NSLS(@"Please enter valid email address.", @"")];
             [alert show];
             return NO;
         }
+    } else if([self.notEmptyStringValidarot isValid:emailString] && ![self.emailValidator isValid:emailString]) {
+        UIAlertView *alert = [self alertWithTitle:NSLS(@"Invalid Email", @"") message:NSLS(@"Please enter valid email address.", @"")];
+        [alert show];
+        return NO;
     }
     
     NSString *phoneString = [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:AddClientPhoneFormField inSection:0]] text];
-    SBValidator *phoneValidator = [SBRegExpValidator phoneNumberValidator:YES];
-    if ([notEmptyStringValidarot isValid:phoneString]) {
-        if(![phoneValidator isValid:phoneString]) {
+    if ([requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValuePhone]
+        || [requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValueEmailAndPhone])
+    {
+        if (![self.notEmptyStringValidarot isValid:phoneString]) {
+            UIAlertView *alert = [self alertWithTitle:NSLS(@"Invalid Phone", @"") message:NSLS(@"Phone number is required. Please enter valid phone number.", @"")];
+            [alert show];
+            return NO;
+        } else if(![self.phoneValidator isValid:phoneString]) {
             UIAlertView *alert = [self alertWithTitle:NSLS(@"Invalid Phone", @"") message:NSLS(@"Please enter valid phone number.", @"")];
             [alert show];
             return NO;
         }
+    } else if([self.notEmptyStringValidarot isValid:phoneString] && ![self.phoneValidator isValid:phoneString]) {
+        UIAlertView *alert = [self alertWithTitle:NSLS(@"Invalid Phone", @"") message:NSLS(@"Please enter valid phone number.", @"")];
+        [alert show];
+        return NO;
     }
     
-    return [notEmptyStringValidarot isValid:phoneString] || [notEmptyStringValidarot isValid:emailString];
+    return YES;
+}
+
+- (BOOL)emailFieldIsRequired
+{
+    NSAssert(requiredFields != nil, @"information about required fields not loaded");
+    NSAssert(![requiredFields isEqualToString:@""], @"information about required fields not loaded");
+    return [requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValueEmail] || [requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValueEmailAndPhone];
+}
+
+- (BOOL)phoneFieldIsRequired
+{
+    NSAssert(requiredFields != nil, @"information about required fields not loaded");
+    NSAssert(![requiredFields isEqualToString:@""], @"information about required fields not loaded");
+    return [requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValuePhone] || [requiredFields isEqualToString:kSBCompanyClientRequiredFieldsValueEmailAndPhone];
 }
 
 #pragma mark -
@@ -221,6 +298,20 @@ NS_ENUM(NSInteger, AddClientFormFields)
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section
+{
+    if ([self emailFieldIsRequired] && [self phoneFieldIsRequired]) {
+        return NSLS(@"Email address and phone number are mandatory fields.",@"");
+    }
+    else if ([self emailFieldIsRequired]) {
+        return NSLS(@"Email address is mandatory field.", @"");
+    }
+    else if ([self phoneFieldIsRequired]) {
+        return NSLS(@"Phone number is mandatory field.", @"");
+    }
+    return nil;
+}
+
 #pragma mark -
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
@@ -238,6 +329,17 @@ NS_ENUM(NSInteger, AddClientFormFields)
 {
     if (!textField.hasText && [self rowForTag:textField.tag] == AddClientPhoneFormField) {
         textField.text = diallingCode;
+    }
+    return YES;
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if (!textField.hasText && [self rowForTag:textField.tag] == AddClientPhoneFormField) {
+        phone = [textField.text stringByReplacingCharactersInRange:range withString:string];
+    }
+    else if (!textField.hasText && [self rowForTag:textField.tag] == AddClientEmailFormField) {
+        email = [textField.text stringByReplacingCharactersInRange:range withString:string];
     }
     return YES;
 }

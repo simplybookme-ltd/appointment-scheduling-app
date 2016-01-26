@@ -129,9 +129,6 @@
         components.day = day + [calendar component:NSCalendarUnitDay fromDate:self.filter.from];
         components.month = [calendar component:NSCalendarUnitMonth fromDate:self.filter.from];
         components.year = [calendar component:NSCalendarUnitYear fromDate:self.filter.from];
-        components.hour = 0;
-        components.minute = 0;
-        components.second = 0;
         NSDate *date = [calendar dateFromComponents:components];
         components.day = 1;
         components.month = 0;
@@ -471,7 +468,7 @@
         if (indexPath) {
             [self.collectionView deselectItemAtIndexPath:indexPath animated:NO];
             NSObject<SBBookingProtocol> *booking = [self.calendarDataSource bookingAtIndexPath:indexPath];
-            controller.initialDate = booking.startDate;
+            controller.initialDate = (booking.startDate ? booking.startDate : [NSDate date]);
             controller.preferedStartTime = booking.startDate;
             CalendarSectionDataSource *section = self.calendarDataSource.sections[indexPath.section];
             controller.preferedPerformerID = (NSString *) section.sectionID;

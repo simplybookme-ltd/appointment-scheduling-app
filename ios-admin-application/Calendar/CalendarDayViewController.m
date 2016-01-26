@@ -90,20 +90,8 @@
     self.calendarGridLayout.showCurrentTimeLine = YES;
     self.calendarListLayout.showCurrentTimeLine = YES;
 
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidReceiveRemoteNotification
-                                                      object:[UIApplication sharedApplication]
-                                                       queue:nil usingBlock:^(NSNotification *notification) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                    NSString *push = notification.userInfo[@"aps"][@"alert"];
-                    push = [[push componentsSeparatedByString:@" at "] lastObject];
-                    NSDate *date = [[NSDateFormatter sb_pushNotificationTimeParser] dateFromString:push];
-                    self.filter.from = date;
-                    self.filter.to = date;
-                    [self.weekView setSelectedDate:date animated:YES];
-                    [self loadData];
-                });
-            }];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidReceiveRemoteNotificationHandler:)
+                                                 name:UIApplicationDidReceiveRemoteNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionDidEndNotificationHandler:)
                                                  name:kSBSessionManagerDidEndSessionNotification object:nil];
 }
@@ -111,6 +99,7 @@
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kSBSessionManagerDidEndSessionNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveRemoteNotification object:nil];
     [self.calendarGridLayout finilize];
     [self.calendarListLayout finilize];
 }
@@ -319,6 +308,22 @@
 
 #pragma mark - Notification handlers
 
+- (void)applicationDidReceiveRemoteNotificationHandler:(NSNotification *)notification
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.navigationController popToRootViewControllerAnimated:YES];
+        NSString *push = notification.userInfo[@"aps"][@"alert"];
+        push = [[push componentsSeparatedByString:@" at "] lastObject];
+        NSDate *date = [[NSDateFormatter sb_pushNotificationTimeParser] dateFromString:push];
+        if (date) {
+            self.filter.from = date;
+            self.filter.to = date;
+            [self.weekView setSelectedDate:date animated:YES];
+            [self loadData];
+        }
+    });
+}
+
 - (void)sessionDidEndNotificationHandler:(NSNotification *)notification
 {
     [self.calendarGridLayout finilize];
@@ -492,7 +497,7 @@
         if (indexPath) {
             [self.collectionView deselectItemAtIndexPath:indexPath animated:NO];
             NSObject<SBBookingProtocol> *booking = [self.calendarDataSource bookingAtIndexPath:indexPath];
-            controller.initialDate = booking.startDate;
+            controller.initialDate = (booking.startDate ? booking.startDate : [NSDate date]);
             controller.preferedStartTime = booking.startDate;
             CalendarSectionDataSource *section = self.calendarDataSource.sections[indexPath.section];
             controller.preferedPerformerID = (NSString *) section.sectionID;

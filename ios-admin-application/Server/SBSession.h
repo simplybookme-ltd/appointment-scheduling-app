@@ -56,6 +56,7 @@ extern NSString * const kSBTimePeriodWeek;
 - (SBRequest *)addDeviceToken:(NSString *)deviceToken callback:(SBRequestCallback)callback;
 - (SBRequest *)deleteDeviceToken:(NSString *)deviceToken callback:(SBRequestCallback)callback;
 - (SBRequest *)isPluginActivated:(NSString *)pluginName callback:(SBRequestCallback)callback;
+- (SBRequest *)getCompanyParam:(NSString *)paramKey callback:(SBRequestCallback)callback;
 
 // statuses plugin
 - (SBRequest *)getStatusesList:(SBRequestCallback)callback;

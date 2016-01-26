@@ -103,7 +103,6 @@
 
 - (BOOL)process:(id)result
 {
-    NSLog(@"(%@) %@", NSStringFromClass([result class]), result);
     self.result = result;
     return [self chainResult:result success:YES];
 }

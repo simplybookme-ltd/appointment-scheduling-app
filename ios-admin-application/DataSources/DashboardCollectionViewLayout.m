@@ -51,7 +51,14 @@ NSString * const kDashboardWidgetSeparatorDecorationViewKind = @"kDashboardWidge
 
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds
 {
-    return YES;
+    if (!CGSizeEqualToSize(self.collectionView.bounds.size, newBounds.size)) { // invalidate layout if orientation/screen size changed
+        return YES;
+    }
+    else if (!CGPointEqualToPoint(self.collectionView.bounds.origin, newBounds.origin)) { // do not invalidate layout on scroll
+        [self invalidateLayoutWithContext:[self invalidationContextForBoundsChange:newBounds]];
+        return NO;
+    }
+    return NO;
 }
 
 - (void)prepareLayout
@@ -148,7 +155,6 @@ NSString * const kDashboardWidgetSeparatorDecorationViewKind = @"kDashboardWidge
         }
     }
     self.contentSize = CGSizeMake(self.collectionView.frame.size.width, widgetY);
-//    NSLog(@"%@", self.sectionsLayout);
 }
 
 - (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect
@@ -181,7 +187,7 @@ NSString * const kDashboardWidgetSeparatorDecorationViewKind = @"kDashboardWidge
         NSUInteger numberOfItems = [[self.sectionsLayout[section] items] count];
         for (NSUInteger item = 0; item < numberOfItems; item++) {
             NSIndexPath *itemIndexPath = [NSIndexPath indexPathForItem:item inSection:section];
-            UICollectionViewLayoutAttributes *itemAttributes = [self layoutAttributesForItemAtIndexPath:itemIndexPath numberOfItems:numberOfItems];
+            UICollectionViewLayoutAttributes *itemAttributes = [self layoutAttributesForItemAtIndexPath:itemIndexPath];
             [attributes addObject:itemAttributes];
             
             if (item) {
@@ -279,7 +285,7 @@ NSString * const kDashboardWidgetSeparatorDecorationViewKind = @"kDashboardWidge
     return attributes;
 }
 
-- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath numberOfItems:(NSUInteger)numberOfItems
+- (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     UICollectionViewLayoutAttributes *attributes = [UICollectionViewLayoutAttributes layoutAttributesForCellWithIndexPath:indexPath];
     DashboardWidgetLayoutParametrs *sectionLayout = self.sectionsLayout[indexPath.section];

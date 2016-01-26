@@ -34,8 +34,8 @@
 
 - (NSArray *)params
 {
-    return @[[[NSDateFormatter sb_serverDateFormatter] stringFromDate:self.startDate],
-            [[NSDateFormatter sb_serverDateFormatter] stringFromDate:self.endDate]];
+    return @[[[NSDateFormatter sb_serverDateFormatter] stringFromDate:self.startDate ? self.startDate : [NSDate date]],
+             [[NSDateFormatter sb_serverDateFormatter] stringFromDate:self.endDate ? self.endDate : [NSDate date]]];
 }
 
 - (SBResultProcessor *)resultProcessor

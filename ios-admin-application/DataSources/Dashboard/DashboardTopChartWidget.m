@@ -138,18 +138,8 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
 {
     SBRequest *request = [[SBSession defaultSession] getTopServices:^(SBResponse *response) {
         self.error = response.error;
-        if (self.parent.delegate && self.items.count) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                self.loading = NO;
-                NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.items.count)];
-                self.items = @[];
-                if (self.parent.selectedSegment == self
-                        && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didRemoveItemsWithIndexes:)]) {
-                    [self.parent.delegate dashboardWidget:self.parent didRemoveItemsWithIndexes:indexes];
-                }
-            });
-        }
         if (!response.error) {
+            BOOL needsReload = (self.items && self.items.count != 0);
             data = [response.result firstObject];
             self.dataLoaded = YES;
             
@@ -160,22 +150,27 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
                                },
                            @{
                                @"key" : NSLS(@"Number of bookings",@""),
-                               @"value" : data[@"bookings"],
+                               @"value" : data[@"bookings"] ? data[@"bookings"] : @(0),
                                @"icon" : @"dashboard-topchart-widget-bookings"
                                },
                            @{
                                @"key" : NSLS(@"Total revenues",@""),
-                               @"value" : @([data[@"revenue"] floatValue]),
+                               @"value" : data[@"revenue"] ? @([data[@"revenue"] floatValue]) : @(0.0),
                                @"icon" : @"dashboard-topchart-widget-money",
                                @"money" : @YES
                                }
                            ];
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.loading = NO;
-                if (self.parent.selectedSegment == self
-                        && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didInsertItemsWithIndexes:)]) {
-                    NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.items.count)];
-                    [self.parent.delegate dashboardWidget:self.parent didInsertItemsWithIndexes:indexes];
+                if (self.parent.selectedSegment == self) {
+                    if (needsReload && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didRefreshItemsAtIndexes:)]) {
+                        NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.items.count)];
+                        [self.parent.delegate dashboardWidget:self.parent didRefreshItemsAtIndexes:indexes];
+                    }
+                    else if (!needsReload && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didInsertItemsWithIndexes:)]) {
+                        NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.items.count)];
+                        [self.parent.delegate dashboardWidget:self.parent didInsertItemsWithIndexes:indexes];
+                    }
                 }
             });
         }
@@ -190,6 +185,7 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
 - (SBRequest *)dataLoadingRequest
 {
     __block NSString *performerID = nil;
+    __block BOOL needsReload = (self.items && self.items.count != 0);
     SBRequestsGroup *group = [SBRequestsGroup new];
     
     SBRequest *topPerformersRequest = [[SBSession defaultSession] getTopPerformers:^(SBResponse *response) {
@@ -204,16 +200,6 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
     
     SBRequest *workloadRequest = [[SBSession defaultSession] getWorkloadForStartDate:nil endDate:nil performerID:@"" callback:^(SBResponse *response) {
         self.error = response.error;
-        if (self.parent.delegate && [self.parent numberOfItems]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])];
-                self.items = @[];
-                if (self.parent.selectedSegment == self
-                        && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didRemoveItemsWithIndexes:)]) {
-                    [self.parent.delegate dashboardWidget:self.parent didRemoveItemsWithIndexes:indexes];
-                }
-            });
-        }
         if (!response.error) {
             const NSInteger workIndex = 0;
             const NSInteger loadIndex = 1;
@@ -256,12 +242,12 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
                                }];
             [items addObject:@{
                                @"key" : NSLS(@"Number of bookings",@""),
-                               @"value" : data[@"bookings"],
+                               @"value" : data[@"bookings"] ? data[@"bookings"] : @(0),
                                @"icon" : @"dashboard-topchart-widget-bookings"
                                }];
             [items addObject:@{
                                @"key" : NSLS(@"Total revenues",@""),
-                               @"value" : @([data[@"revenue"] floatValue]),
+                               @"value" : data[@"revenue"] ? @([data[@"revenue"] floatValue]) : @(0.0),
                                @"icon" : @"dashboard-topchart-widget-money",
                                @"money" : @YES
                                }];
@@ -286,10 +272,15 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
         self.error = response.error;
         dispatch_async(dispatch_get_main_queue(), ^{
             self.loading = NO;
-            if (self.parent.selectedSegment == self
-                    && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didInsertItemsWithIndexes:)]) {
-                NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])];
-                [self.parent.delegate dashboardWidget:self.parent didInsertItemsWithIndexes:indexes];
+            if (self.parent.selectedSegment == self) {
+                if (needsReload && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didRefreshItemsAtIndexes:)]) {
+                    NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])];
+                    [self.parent.delegate dashboardWidget:self.parent didRefreshItemsAtIndexes:indexes];
+                }
+                else if (!needsReload && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didInsertItemsWithIndexes:)]) {
+                    NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])];
+                    [self.parent.delegate dashboardWidget:self.parent didInsertItemsWithIndexes:indexes];
+                }
             }
         });
     };

@@ -808,7 +808,6 @@ NSString* const CollectionViewCellId = @"WeekViewCell";
  */
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-//    NSLog(@"scrolling");
     NSInteger dayOffset = 0;
     CGFloat sectionWidth = self.collectionView.frame.size.width;
 

@@ -39,10 +39,10 @@
         if (!self.value && self.defaultValue) {
             self.value = self.defaultValue;
         }
-        if (dict[@"values"] && ![dict isEqual:[NSNull null]]) {
-            self.values = [SAFE_KEY(dict, @"values") componentsSeparatedByString:@", "];
-            if (self.values.count == 0) {
-                self.values = [SAFE_KEY(dict, @"values") componentsSeparatedByString:@","];
+        if (dict[@"values"] && ![dict[@"values"] isEqual:[NSNull null]]) {
+            self.values = [dict[@"values"] componentsSeparatedByString:@", "];
+            if (self.values.count == 1 && [self.values[0] isEqualToString:dict[@"values"]]) {
+                self.values = [dict[@"values"] componentsSeparatedByString:@","];
             }
         }
         self.type = @([[self class] typeFromString:SAFE_KEY(dict, @"type")]);

@@ -148,6 +148,9 @@ typedef NSObject <SBCacheProvider> SBCacheProvider;
 - (void)cacheResponse:(SBResponse *)response forRequest:(SBRequestOperation *)request
 {
     NSParameterAssert(response.result != nil);
+    if (!response || !response.result || !request || ![request cacheKey]) {
+        return;
+    }
     [storage setObject:response.result forKey:[request cacheKey]];
     classes[[request cacheKey]] = NSStringFromClass([request class]);
 }

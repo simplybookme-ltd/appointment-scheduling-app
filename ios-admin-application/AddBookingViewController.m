@@ -29,6 +29,7 @@
 #import "SBPerformer+FilterListSelector.h"
 #import "SBService.h"
 #import "SBService+FilterListSelector.h"
+#import "SBPluginsRepository.h"
 
 NS_ENUM(NSInteger, BookingFormSections)
 {
@@ -103,6 +104,12 @@ NS_ENUM(NSInteger, BookingFormFields)
     self.hoursSelectorDataSource = [SBBookingFormHoursSelectorDataSource new];
     self.hoursSelectorDataSource.timeFormatter = self.timeFormatter;
     
+    self.tableView.estimatedRowHeight = 44;
+    self.tableView.rowHeight = UITableViewAutomaticDimension;
+    [self.tableView registerNib:[UINib nibWithNibName:@"ACHRightDetailsTableViewCell" bundle:nil]
+         forCellReuseIdentifier:@"cell"];
+    [self.tableView reloadData];
+    
     SBSession *session = [SBSession defaultSession];
     SBRequestsGroup *group = [SBRequestsGroup new];
     
@@ -115,12 +122,17 @@ NS_ENUM(NSInteger, BookingFormFields)
     }];
     [group addRequest:request];
     
+    request = [session getCompanyParam:kSBCompanyClientRequiredFieldsParamKey callback:^(SBResponse<NSString *> * _Nonnull response) {
+        // nothing to do. but need to call this method to cache result for AddClientViewController.
+    }];
+    [group addRequest:request];
+    
     request = [session getEventList:^(SBResponse<SBServicesCollection *> *response) {
         if (!response.error) {
             self.services = response.result;
             if (self.bookingForm.eventID) {
                 [self.bookingForm setEventID:self.bookingForm.eventID withDuration:[self.services[self.bookingForm.eventID].duration integerValue]];
-                dispatch_sync(dispatch_get_main_queue(), ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:BookingFormServiceField inSection:0]]
                                           withRowAnimation:UITableViewRowAnimationAutomatic];
                 });
@@ -137,7 +149,7 @@ NS_ENUM(NSInteger, BookingFormFields)
         if (!response.error) {
             self.performers = response.result;
             if (self.bookingForm.unitID) {
-                dispatch_sync(dispatch_get_main_queue(), ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:BookingFormPerformerField inSection:0]]
                                           withRowAnimation:UITableViewRowAnimationAutomatic];
                 });
@@ -152,12 +164,17 @@ NS_ENUM(NSInteger, BookingFormFields)
     request = [session getStatusesList:^(SBResponse <SBBookingStatusesCollection *> *response) {
         if (!response.error) {
             self.statusesCollection = response.result;
-            dispatch_sync(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 [self.tableView reloadData];
             });
         } else {
             self.statusesCollection = nil;
         }
+    }];
+    [group addRequest:request];
+    
+    request = [session isPluginActivated:kSBPluginRepositoryStatusPlugin callback:^(SBResponse<NSNumber *> * _Nonnull response) {
+        // nothing to do
     }];
     [group addRequest:request];
     
@@ -189,11 +206,6 @@ NS_ENUM(NSInteger, BookingFormFields)
     [session performReqeust:group];
 
     self.activityIndicator.hidden = NO;
-    
-    self.tableView.estimatedRowHeight = 44;
-    self.tableView.rowHeight = UITableViewAutomaticDimension;
-    [self.tableView registerNib:[UINib nibWithNibName:@"ACHRightDetailsTableViewCell" bundle:nil]
-         forCellReuseIdentifier:@"cell"];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -228,7 +240,7 @@ NS_ENUM(NSInteger, BookingFormFields)
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
     if (context == NULL) {
-        dispatch_sync(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
             if ([keyPath isEqualToString:@"eventID"]) {
                 if (self.bookingForm.unitID
                     && self.services[self.bookingForm.eventID].unitMap
@@ -360,7 +372,7 @@ NS_ENUM(NSInteger, BookingFormFields)
                                                                             }
                                                                             else {
                                                                                 [self.hoursSelectorDataSource setWorkingHoursMatrix:matrix
-                                                                                                                           recordID:@""];
+                                                                                                                           recordID:kSBWorkingHoursMatrixDefaultRecordID];
                                                                             }
                                                                             if (!self.bookingForm.startTime) {
                                                                                 if (self.preferedStartTime) {
@@ -370,9 +382,11 @@ NS_ENUM(NSInteger, BookingFormFields)
                                                                                     self.bookingForm.startTime = self.hoursSelectorDataSource.hours.firstObject;
                                                                                 }
                                                                             }
-                                                                            dispatch_sync(dispatch_get_main_queue(), ^{
-                                                                                [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:BookingFormStartTimeField inSection:0],
-                                                                                                                         [NSIndexPath indexPathForRow:BookingFormEndTimeField inSection:0]]
+                                                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                                                [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:BookingFormStartTimeField
+                                                                                                                                            inSection:BookingFormGeneralSection],
+                                                                                                                         [NSIndexPath indexPathForRow:BookingFormEndTimeField
+                                                                                                                                            inSection:BookingFormGeneralSection]]
                                                                                                       withRowAnimation:UITableViewRowAnimationAutomatic];
                                                                             });
                                                                         }
@@ -388,7 +402,7 @@ NS_ENUM(NSInteger, BookingFormFields)
         self.getAdditionalFieldsRequest = nil;
         if (response.error) {
             if (!response.canceled) {
-                dispatch_sync(dispatch_get_main_queue(), ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [self hideFooterActivityIndicator];
                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
                                                                     message:NSLS(@"Information about additional fields for this service not loaded. Without this information booking cannot be completed. Please try again.",@"")
@@ -399,19 +413,24 @@ NS_ENUM(NSInteger, BookingFormFields)
             }
         }
         else {
-            dispatch_sync(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 [self hideFooterActivityIndicator];
-                NSMutableArray <SBAdditionalField *> *loadedFields = [[NSMutableArray alloc] initWithArray:response.result copyItems:YES];
-                if (self.additionalFieldsPreset) {
-                    [loadedFields enumerateObjectsUsingBlock:^(SBAdditionalField * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                        NSUInteger index = [self.additionalFieldsPreset indexOfObjectPassingTest:^BOOL(SBBookingInfoAdditionalField * _Nonnull fld, NSUInteger idx, BOOL * _Nonnull stop) {
-                            *stop = [fld.name isEqualToString:obj.name];
-                            return *stop;
-                        }];
+            });
+            NSMutableArray <SBAdditionalField *> *loadedFields = [[NSMutableArray alloc] initWithArray:response.result copyItems:YES];
+            if (self.additionalFieldsPreset) {
+                [loadedFields enumerateObjectsUsingBlock:^(SBAdditionalField * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    NSUInteger index = [self.additionalFieldsPreset indexOfObjectPassingTest:^BOOL(SBBookingInfoAdditionalField * _Nonnull fld, NSUInteger idx, BOOL * _Nonnull stop) {
+                        *stop = [fld.name isEqualToString:obj.name];
+                        return *stop;
+                    }];
+                    if (index != NSNotFound) {
                         SBBookingInfoAdditionalField *presetField = self.additionalFieldsPreset[index];
                         obj.value = presetField.value;
-                    }];
-                }
+                    }
+                }];
+            }
+            // sync additional fields to prevent crash on sections reload
+            dispatch_sync(dispatch_get_main_queue(), ^{
                 self.bookingForm.additionalFields = loadedFields;
             });
         }
@@ -471,19 +490,20 @@ NS_ENUM(NSInteger, BookingFormFields)
             }
         }
         else {
-            NSDictionary *bookingData = [response.result[@"bookings"] firstObject];
-            if (bookingData && bookingData[@"id"]) {
-                [self makeSetStatusRequestForBooking:bookingData[@"id"]];
-            }
-            else {
-                dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.activityIndicator.hidden = YES;
+                NSDictionary *bookingData = [response.result[@"bookings"] firstObject];
+                NSNumber *pluginStatus = [[SBPluginsRepository repository] isPluginEnabled:kSBPluginRepositoryStatusPlugin];
+                if (bookingData && bookingData[@"id"] && pluginStatus != nil && pluginStatus.boolValue) {
+                    [self makeSetStatusRequestForBooking:bookingData[@"id"]];
+                }
+                else {
                     [self invalidateCaches];
-                    self.activityIndicator.hidden = YES;
                     if (self.bookingCreatedHandler) {
                         self.bookingCreatedHandler(self);
                     }
-                });
-            }
+                }
+            });
         }
     };
     if (self.bookingForm.bookingID) {
@@ -525,6 +545,7 @@ NS_ENUM(NSInteger, BookingFormFields)
         });
     }];
     [pendingRequests addObject:request.GUID];
+    self.activityIndicator.hidden = NO;
     [[SBSession defaultSession] performReqeust:request];
 }
 
@@ -582,6 +603,24 @@ NS_ENUM(NSInteger, BookingFormFields)
     if (![serverIDValidator isValid:self.bookingForm.unitID]) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Booking data not valid.",@"")
                                                         message:NSLS(@"Please select performer.",@"")
+                                                       delegate:nil
+                                              cancelButtonTitle:NSLS(@"OK",@"")
+                                              otherButtonTitles:nil];
+        [alert show];
+        return;
+    }
+    if (!self.bookingForm.startDate || !self.bookingForm.startTime) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Booking data not valid.",@"")
+                                                        message:NSLS(@"Please select start date and time.",@"")
+                                                       delegate:nil
+                                              cancelButtonTitle:NSLS(@"OK",@"")
+                                              otherButtonTitles:nil];
+        [alert show];
+        return;
+    }
+    if (!self.bookingForm.endTime) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Booking data not valid.",@"")
+                                                        message:NSLS(@"Please select ent time.",@"")
                                                        delegate:nil
                                               cancelButtonTitle:NSLS(@"OK",@"")
                                               otherButtonTitles:nil];
@@ -779,7 +818,7 @@ NS_ENUM(NSInteger, BookingFormFields)
             if (self.pickerIndexPath.row == BookingFormStartTimeField) {
                 picker.dataSource = self.hoursSelectorDataSource;
                 NSInteger row = [self.hoursSelectorDataSource.hours indexOfObject:self.bookingForm.startTime];
-                [picker selectRow:row inComponent:0 animated:NO];
+                [picker selectRow:(row != NSNotFound ? row : 0) inComponent:0 animated:NO];
                 [self.hoursSelectorDataSource setStartHoursModeWithStartHour:self.bookingForm.startTime];
             } else if (self.pickerIndexPath.row == BookingFormEndTimeField) {
                 picker.dataSource = self.hoursSelectorDataSource;
@@ -1039,25 +1078,27 @@ NS_ENUM(NSInteger, BookingFormFields)
 {
     if (self.pickerIndexPath.row == BookingFormStartTimeField) {
         self.bookingForm.startTime = self.hoursSelectorDataSource.hours[row];
-        [self hidePicker];
     }
     else if (self.pickerIndexPath.row == BookingFormEndTimeField) {
         NSDate *oldValue = self.bookingForm.endTime;
         self.bookingForm.endTime = self.hoursSelectorDataSource.hours[row];
-        if (![self.bookingForm isDateRangeValid]) { // not valid end time. back to previous value
+        if ([self.bookingForm.startTime compare:self.bookingForm.endTime] != NSOrderedAscending) {
             self.bookingForm.endTime = oldValue;
-            [pickerView selectRow:[self.hoursSelectorDataSource.hours indexOfObject:oldValue] inComponent:component animated:YES];
-        }
-        else {
-            [self hidePicker];
+            if ([self.hoursSelectorDataSource.hours indexOfObject:oldValue] == NSNotFound) {
+                self.bookingForm.endTime = [self.bookingForm validEndTime];
+            }
+            if ([self.hoursSelectorDataSource.hours indexOfObject:self.bookingForm.endTime] != NSNotFound) {
+                [pickerView selectRow:[self.hoursSelectorDataSource.hours indexOfObject:self.bookingForm.endTime]
+                          inComponent:component animated:YES];
+            }
         }
     }
     else if (self.pickerIndexPath.row == BookingFormStatusField) {
         self.bookingStatus = self.statusesCollection[row];
         [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:BookingFormStatusField inSection:BookingFormGeneralSection]]
                               withRowAnimation:UITableViewRowAnimationAutomatic];
-        [self hidePicker];
     }
+    [self hidePicker];
 }
 
 #pragma mark - Filter List Selector Delegate

@@ -77,8 +77,13 @@ NSString * const kDashboardClientsActivityWidgetCellReuseIdentifier = @"kDashboa
     [cell.pieChart reloadData];
     for (NSInteger i = 0; i < self.selectedSegment.items.count; i++) {
         NSDictionary *slice = self.selectedSegment.items[i];
+        NSString *format = @"%.2f%% %@";
+        CGFloat value = [slice[@"value"] floatValue];
+        if (value - floor(value) == 0) {
+            format = @"%.0f%% %@";
+        }
         [cell addValue:slice[@"value"]
-             withLabel:slice[@"label"]
+             withLabel:[NSString stringWithFormat:format, value, slice[@"label"]]
                  color:[self pieChart:nil colorForSliceAtIndex:i]];
     }
 }
@@ -122,7 +127,7 @@ NSString * const kDashboardClientsActivityWidgetCellReuseIdentifier = @"kDashboa
         case 1:
             return [UIColor colorWithRed:0.960 green:0.838 blue:0.247 alpha:1.000];
     }
-    return [UIColor colorWithWhite:0.937 alpha:1.000];
+    return [UIColor colorWithWhite:0.870 alpha:1.000];
 }
 
 - (CGFloat)pieChart:(XYPieChart *)pieChart valueForSliceAtIndex:(NSUInteger)index
@@ -164,11 +169,16 @@ NSString * const kDashboardClientsActivityWidgetCellReuseIdentifier = @"kDashboa
         dispatch_async(dispatch_get_main_queue(), ^{
             self.loading = NO;
             if (self.parent.selectedSegment == self && self.parent.delegate) {
-                if (needInsert && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didInsertItemsWithIndexes:)]) {
-                    [self.parent.delegate dashboardWidget:self.parent didInsertItemsWithIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])]];
+                if ([self.parent numberOfItems] != 0) {
+                    if (needInsert && [self.parent.delegate respondsToSelector:@selector(dashboardWidget:didInsertItemsWithIndexes:)]) {
+                        [self.parent.delegate dashboardWidget:self.parent didInsertItemsWithIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])]];
+                    }
+                    else if ([self.parent.delegate respondsToSelector:@selector(dashboardWidget:didRefreshItemsAtIndexes:)]) {
+                        [self.parent.delegate dashboardWidget:self.parent didRefreshItemsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])]];
+                    }
                 }
-                else if ([self.parent.delegate respondsToSelector:@selector(dashboardWidget:didRefreshItemsAtIndexes:)]) {
-                    [self.parent.delegate dashboardWidget:self.parent didRefreshItemsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, [self.parent numberOfItems])]];
+                else if ([self.parent.delegate respondsToSelector:@selector(dashboardWidgetDidRefreshWidgetData:)]) {
+                    [self.parent.delegate dashboardWidgetDidRefreshWidgetData:self.parent];
                 }
             }
         });
@@ -208,7 +218,7 @@ NSString * const kDashboardClientsActivityWidgetCellReuseIdentifier = @"kDashboa
                            @{@"label" : NSLS(@"By admin/employee", @""),
                              @"value" : (canceledTotal > 0 ? @(((float)canceledByUser / (float)canceledTotal) * 100) : @0)},
                            @{@"label" : NSLS(@"System cancellations", @""),
-                             @"value" : (canceledTotal > 0 ? @(((float) canceledByUser / (float) canceledTotal) * 100) : @0)}
+                             @"value" : (canceledTotal > 0 ? @(((float) canceledBySystem / (float) canceledTotal) * 100) : @0)}
                            ];
             self.dataLoaded = YES;
         }

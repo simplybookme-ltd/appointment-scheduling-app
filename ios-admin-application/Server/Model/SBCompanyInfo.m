@@ -9,6 +9,11 @@
 #import "SBCompanyInfo.h"
 #import "NSString+HTML.h"
 
+NSString * const kSBCompanyClientRequiredFieldsParamKey = @"require_fields";
+NSString * const kSBCompanyClientRequiredFieldsValuePhone = @"phone";
+NSString * const kSBCompanyClientRequiredFieldsValueEmail = @"email";
+NSString * const kSBCompanyClientRequiredFieldsValueEmailAndPhone = @"email_phone";
+          
 @implementation SBCompanyInfo
 
 @synthesize serverTimeZone = _serverTimeZone;

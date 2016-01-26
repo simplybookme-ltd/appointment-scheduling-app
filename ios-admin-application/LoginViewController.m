@@ -178,12 +178,18 @@ NS_ENUM(NSInteger, LoginFormFields)
     if (companyLogin && ![companyLogin isEqualToString:@""]) {
         restorePasswordURLString = [restorePasswordURLString stringByAppendingFormat:@"%@/", companyLogin];
     }
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:restorePasswordURLString]];
+    NSURL *restorePasswordURL = [NSURL URLWithString:restorePasswordURLString];
+    if (restorePasswordURL != nil) {
+        [[UIApplication sharedApplication] openURL:restorePasswordURL];
+    }
 }
 
 - (IBAction)restoreCompanyLoginAction:(id)sender
 {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://secure.simplybook.me/login/remind-company/"]];
+    NSURL *remindCompanyLoginURL = [NSURL URLWithString:@"https://secure.simplybook.me/login/remind-company/"];
+    if (remindCompanyLoginURL != nil) {
+        [[UIApplication sharedApplication] openURL:remindCompanyLoginURL];
+    }
 }
 
 #pragma mark -
@@ -226,7 +232,8 @@ NS_ENUM(NSInteger, LoginFormFields)
         cell.textField.placeholder = NSLS(@"Company Login",@"");
         cell.textField.returnKeyType = UIReturnKeyNext;
         cell.textField.keyboardType = UIKeyboardTypeASCIICapable;
-        cell.textField.autocorrectionType = UITextAutocapitalizationTypeNone;
+        cell.textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        cell.textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         if (credentials) {
             cell.textField.text = credentials.companyLogin;
         }
@@ -237,6 +244,8 @@ NS_ENUM(NSInteger, LoginFormFields)
         cell.textField.placeholder = NSLS(@"Login",@"");
         cell.textField.returnKeyType = UIReturnKeyNext;
         cell.textField.keyboardType = UIKeyboardTypeAlphabet;
+        cell.textField.autocorrectionType = UITextAutocorrectionTypeNo;
+        cell.textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
         if (credentials) {
             cell.textField.text = credentials.userLogin;
         }

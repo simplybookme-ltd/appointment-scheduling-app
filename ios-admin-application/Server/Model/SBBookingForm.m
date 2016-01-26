@@ -39,12 +39,18 @@
 
 - (void)setStartTime:(NSDate *)startTime
 {
-    NSParameterAssert(startTime != nil);
+//    NSParameterAssert(startTime != nil);
     [self willChangeValueForKey:@"startTime"];
     _startTime = startTime;
     NSUInteger timeframe = (self.eventID && self.eventDuration ? self.eventDuration : self.timeframe);
     self.endTime = [_startTime dateByAddingTimeInterval:timeframe * 60];
     [self didChangeValueForKey:@"startTime"];
+}
+
+- (NSDate *)validEndTime
+{
+    NSUInteger timeframe = (self.eventID && self.eventDuration ? self.eventDuration : self.timeframe);
+    return [self.startTime dateByAddingTimeInterval:timeframe * 60];
 }
 
 @end

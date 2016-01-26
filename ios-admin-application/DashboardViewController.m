@@ -280,7 +280,6 @@
 {
     DashboardAbstractWidgetDataSource *widget = self.widgets[indexPath.section];
     if ([widget isKindOfClass:[DashboardBookingsWidget class]]) {
-        NSLog(@"click");
         if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
             [self performSegueWithIdentifier:@"showBookingDetails-iPad" sender:self];
         }

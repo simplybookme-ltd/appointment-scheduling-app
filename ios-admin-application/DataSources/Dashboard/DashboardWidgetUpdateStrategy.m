@@ -95,7 +95,6 @@
                                              target:self selector:@selector(timerHandler:)
                                            userInfo:nil repeats:YES];
         [[NSRunLoop mainRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-        NSLog(@"%@ did start timer", self);
     }
 }
 
@@ -107,7 +106,6 @@
 
 - (void)timerHandler:(NSTimer *_Nonnull)timer
 {
-    NSLog(@"%@ timer handler", self);
     [self.widget reloadData];
 }
 

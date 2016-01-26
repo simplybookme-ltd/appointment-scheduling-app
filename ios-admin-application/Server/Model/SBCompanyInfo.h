@@ -9,6 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 
+extern NSString * const kSBCompanyClientRequiredFieldsParamKey;
+extern NSString * const kSBCompanyClientRequiredFieldsValuePhone;
+extern NSString * const kSBCompanyClientRequiredFieldsValueEmail;
+extern NSString * const kSBCompanyClientRequiredFieldsValueEmailAndPhone;
+                 
 @interface SBCompanyInfo : NSObject
 
 @property (nonatomic, strong) NSString * address;

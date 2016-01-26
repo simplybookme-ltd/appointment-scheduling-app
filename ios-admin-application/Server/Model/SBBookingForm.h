@@ -27,5 +27,6 @@
 
 - (void)setEventID:(nullable NSString *)eventID withDuration:(NSUInteger)duration;
 - (BOOL)isDateRangeValid;
+- (nullable NSDate *)validEndTime;
 
 @end

@@ -16,6 +16,12 @@
     return [self initWithToken:nil comanyLogin:companyLogin];
 }
 
+- (instancetype)copyWithToken:(NSString *)token
+{
+    NSAssertNotImplementedFeature(@"this request can't be duplicated");
+    return nil;
+}
+
 - (SBCachePolicy)cachePolicy
 {
     return SBNoCachePolicy;
@@ -28,6 +34,9 @@
 
 - (NSArray *)params
 {
+    NSAssert(self.companyLogin != nil, @"company login can't be nil");
+    NSAssert(self.login != nil, @"login can't be nil");
+    NSAssert(self.password != nil, @"password can't be nil");
     return @[[self.companyLogin lowercaseString], self.login, self.password];
 }
 

@@ -73,8 +73,11 @@ NSString * _Nonnull const kCalendarSectionDataSourcePerformerIDBindingKey = @"kC
 
 - (void)removeNewBookingPlaceholder
 {
-    if (self.indexOfNewBookingPlaceholder != NSNotFound) {
+    if (self.indexOfNewBookingPlaceholder != NSNotFound && self.indexOfNewBookingPlaceholder < self._items.count) {
         [self._items removeObjectAtIndex:self.indexOfNewBookingPlaceholder];
+        self.indexOfNewBookingPlaceholder = NSNotFound;
+    }
+    else if (self.indexOfNewBookingPlaceholder >= self._items.count) {
         self.indexOfNewBookingPlaceholder = NSNotFound;
     }
 }

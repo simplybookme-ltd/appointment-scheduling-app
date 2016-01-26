@@ -8,7 +8,7 @@
 #import "NSDate+TimeManipulation.h"
 #import "SBBooking.h"
 
-NSString * const kDefaultWorkHoursRecordID = @"default";
+NSString * const kSBWorkingHoursMatrixDefaultRecordID = @"default";
 
 @interface WorkHoursData : NSObject
 
@@ -37,7 +37,7 @@ NSString * const kDefaultWorkHoursRecordID = @"default";
     self = [super init];
     if (self) {
         records = [NSMutableDictionary dictionary];
-        [data[kDefaultWorkHoursRecordID] enumerateKeysAndObjectsUsingBlock:^(NSString *dateString, NSDictionary *recordData, BOOL *stop) {
+        [data[kSBWorkingHoursMatrixDefaultRecordID] enumerateKeysAndObjectsUsingBlock:^(NSString *dateString, NSDictionary *recordData, BOOL *stop) {
             NSDate *selectedDate = [[NSDateFormatter sb_serverDateFormatter] dateFromString:dateString];
             if (!baseDate) {
                 baseDate = selectedDate;
@@ -133,11 +133,11 @@ NSString * const kDefaultWorkHoursRecordID = @"default";
                 self.end = record.end;
             }
         }];
-        if ([records[kDefaultWorkHoursRecordID] isDayOff]) {
+        if ([records[kSBWorkingHoursMatrixDefaultRecordID] isDayOff]) {
             self.start = nil;
             self.end = nil;
-            [self findStartEndTimeInRecordsDefaultRecord:records[kDefaultWorkHoursRecordID]
-                                    ignoreRecordsForKeys:@[kDefaultWorkHoursRecordID]
+            [self findStartEndTimeInRecordsDefaultRecord:records[kSBWorkingHoursMatrixDefaultRecordID]
+                                    ignoreRecordsForKeys:@[kSBWorkingHoursMatrixDefaultRecordID]
                                     baseDate:baseDate];
         }
         [self calculateHoursWithBaseDate:baseDate step:60];
@@ -282,7 +282,7 @@ NSString * const kDefaultWorkHoursRecordID = @"default";
 }
 
 - (BOOL)isDayOff {
-    return [records[kDefaultWorkHoursRecordID] isDayOff];
+    return [records[kSBWorkingHoursMatrixDefaultRecordID] isDayOff];
 }
 
 - (BOOL)isDayOffForRecordWithID:(NSObject *)recordID {
@@ -296,7 +296,7 @@ NSString * const kDefaultWorkHoursRecordID = @"default";
 - (nonnull NSArray <SBDateRange *> *)breaksForRecordWithID:(NSObject *)recordID {
     NSParameterAssert(recordID != nil);
     if (!records[recordID]) {
-        return [records[kDefaultWorkHoursRecordID] breaks];
+        return [records[kSBWorkingHoursMatrixDefaultRecordID] breaks];
     }
     return [records[recordID] breaks];
 }
@@ -304,7 +304,7 @@ NSString * const kDefaultWorkHoursRecordID = @"default";
 - (nonnull NSDate *)startTimeForRecordWithID:(NSObject *)recordID {
     NSParameterAssert(recordID != nil);
     if (!records[recordID]) {
-        return [records[kDefaultWorkHoursRecordID] start];
+        return [records[kSBWorkingHoursMatrixDefaultRecordID] start];
     }
     return [records[recordID] start];
 }
@@ -312,7 +312,7 @@ NSString * const kDefaultWorkHoursRecordID = @"default";
 - (nonnull NSDate *)endTimeForRecordWithID:(NSObject *)recordID {
     NSParameterAssert(recordID != nil);
     if (!records[recordID]) {
-        return [records[kDefaultWorkHoursRecordID] end];
+        return [records[kSBWorkingHoursMatrixDefaultRecordID] end];
     }
     return [records[recordID] end];
 }

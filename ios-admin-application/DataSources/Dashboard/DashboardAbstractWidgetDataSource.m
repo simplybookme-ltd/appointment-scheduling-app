@@ -106,12 +106,16 @@ NSString *_Nonnull const kDashboardErrorMessageSupplementaryReuseIdentifier = @"
 {
     SBRequest *request = [self dataLoadingRequest];
     [[SBCache cache] invalidateCacheForRequest:request];
-    self.callbacks[request.GUID] = request.callback;
+    @synchronized(self) {
+        self.callbacks[request.GUID] = [request.callback copy];
+    }
     request.callback = ^(SBResponse *response) {
         self.error = response.error;
-        if (self.callbacks[response.requestGUID]) {
-            self.callbacks[response.requestGUID](response);
-            [self.callbacks removeObjectForKey:response.requestGUID];
+        @synchronized(self) {
+            if (self.callbacks[response.requestGUID]) {
+                self.callbacks[response.requestGUID](response);
+                [self.callbacks removeObjectForKey:response.requestGUID];
+            }
         }
         if (self.delegate && [self.delegate respondsToSelector:@selector(dashboardWidget:didFinishDataLoadingWithResponse:)]) {
             [self.delegate dashboardWidget:self didFinishDataLoadingWithResponse:response];

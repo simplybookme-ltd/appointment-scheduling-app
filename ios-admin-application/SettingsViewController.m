@@ -38,7 +38,6 @@ NS_ENUM(NSInteger, GeneralSectionItems)
 
 NS_ENUM(NSInteger, ActionsSectionItems)
 {
-    BetaTestActionItem,
     LogoutActionItem,
     ActionsSectionItemsCount
 };
@@ -210,9 +209,6 @@ NS_ENUM(NSInteger, ActionsSectionItems)
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"action-cell" forIndexPath:indexPath];
         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
         switch (indexPath.row) {
-            case BetaTestActionItem:
-                cell.textLabel.text = NSLS(@"Join Beta-testing",@"");
-                break;
             case LogoutActionItem:
                 cell.textLabel.text = NSLS(@"Logout",@"");
                 break;
@@ -251,10 +247,7 @@ NS_ENUM(NSInteger, ActionsSectionItems)
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     if (indexPath.section == ActionsSection) {
-        if (indexPath.row == BetaTestActionItem) {
-            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://blog.simplybook.me/open-beta-test-of-the-simplybook-me-admin-app/"]];
-        }
-        else if (indexPath.row == LogoutActionItem) {
+        if (indexPath.row == LogoutActionItem) {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"SimplyBook.me",@"")
                                                             message:NSLS(@"Do you want to log out?",@"")
                                                            delegate:self cancelButtonTitle:NSLS(@"NO",@"")

@@ -142,14 +142,20 @@ NSString * const kDashboardSegmentedWidgetHeaderSupplementaryReuseIdentifier = @
 - (SBRequest *)dataLoadingRequest
 {
     SBRequest *request = [self.selectedSegment dataLoadingRequest];
-    segmentsRequests[request.GUID] = request.callback;
+    @synchronized(self) {
+        if (request.GUID && request.callback) {
+            segmentsRequests[request.GUID] = [request.callback copy];
+        }
+    }
     return request;
 }
 
 - (void)applyDataFromResponse:(SBResponse *)response
 {
-    SBRequestCallback callback = segmentsRequests[response.requestGUID];
-    callback(response);
+    @synchronized(self) {
+        SBRequestCallback callback = segmentsRequests[response.requestGUID];
+        callback(response);
+    }
 }
 
 - (NSUInteger)numberOfItems
