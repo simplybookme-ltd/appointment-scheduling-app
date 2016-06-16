@@ -32,13 +32,18 @@
         GUID = [NSString stringWithFormat:@"%@-%@", NSStringFromClass([self class]), [[NSProcessInfo processInfo] globallyUniqueString]];
         __weak typeof (self) weakSelf = self;
         [self addExecutionBlock:^{
+#ifdef DEBUG
+            if (weakSelf.callback == nil) { // NSAssert generates compile warrning.
+                [[NSAssertionHandler currentHandler] handleFailureInMethod:_cmd object:weakSelf file:[NSString stringWithUTF8String:__FILE__] lineNumber:__LINE__ description:@"no callback specified"];
+            }
+#endif
             SBResponse *responce = nil;
             if (weakSelf.error) {
                 responce = [SBErrorResponse responseWithError:weakSelf.error requestGUID:weakSelf.GUID];
             } else {
                 responce = [SBBooleanResponse booleanResponseWithValue:!weakSelf.cancelled requestGUID:weakSelf.GUID];
             }
-            if ([weakSelf.delegate request:weakSelf didFinishWithResponse:responce]) {
+            if ([weakSelf.delegate request:weakSelf didFinishWithResponse:responce] && weakSelf.callback != nil) {
                 weakSelf.callback(responce);
             };
         }];
@@ -58,6 +63,11 @@
 
 - (void)addRequest:(SBRequest *)request
 {
+    NSParameterAssert(request != nil);
+    NSParameterAssert(![request isKindOfClass:[self class]]); // group in group
+    if (request == nil || [request isKindOfClass:[self class]]) {
+        return;
+    }
     request.delegate = self;
     [self addDependency:request];
 }

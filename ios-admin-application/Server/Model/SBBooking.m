@@ -32,6 +32,7 @@
         self.paymentStatus = SAFE_KEY(dict, @"payment_status");
         self.paymentSystem = SAFE_KEY(dict, @"payment_system");
 
+        /// if some fields contains value then we can say that some plugins enabled
         if (dict[@"status"]) {
             [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryStatusPlugin enabled:YES];
         }

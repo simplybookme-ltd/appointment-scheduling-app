@@ -9,6 +9,13 @@
 #import "SBCache.h"
 #import "SBRequestOperation_Private.h"
 
+NSString * const kSBCache_WillInvalidateCacheForRequestNotification = @"kSBCache_WillInvalidateCacheForRequestNotification";
+NSString * const kSBCache_DidInvalidateCacheForRequestNotification = @"kSBCache_DidInvalidateCacheForRequestNotification";
+NSString * const kSBCache_WillInvalidateCacheNotification = @"kSBCache_WillInvalidateCacheNotification";
+NSString * const kSBCache_DidInvalidateCacheNotification = @"kSBCache_DidInvalidateCacheNotification";
+NSString * const kSBCache_RequestObjectUserInfoKey = @"kSBCache_RequestObjectUserInfoKey";
+NSString * const kSBCache_RequestClassUserInfoKey = @"kSBCache_RequestClassUserInfoKey";
+
 @protocol SBCacheProvider <NSObject>
 
 - (void)cacheResponse:(SBResponse *)response forRequest:(SBRequestOperation *)request;
@@ -112,21 +119,31 @@ typedef NSObject <SBCacheProvider> SBCacheProvider;
 - (void)invalidateCacheForRequest:(SBRequestOperation *)request
 {
     SBCacheProvider *provider = [self cacheProviderForPolicy:request.cachePolicy];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSBCache_WillInvalidateCacheForRequestNotification object:self
+                                                      userInfo:@{kSBCache_RequestObjectUserInfoKey: request}];
     [provider invalidateCacheForRequest:request];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSBCache_DidInvalidateCacheForRequestNotification object:self
+                                                      userInfo:@{kSBCache_RequestObjectUserInfoKey: request}];
 }
 
 - (void)invalidateCacheForRequestClass:(Class)requestClass
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSBCache_WillInvalidateCacheForRequestNotification object:self
+                                                      userInfo:@{kSBCache_RequestClassUserInfoKey: requestClass}];
     [cacheProviders enumerateKeysAndObjectsWithOptions:NSEnumerationConcurrent usingBlock:^(id  _Nonnull key, SBCacheProvider * _Nonnull obj, BOOL * _Nonnull stop) {
         [obj invalidateCacheForRequestClass:requestClass];
     }];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSBCache_DidInvalidateCacheForRequestNotification object:self
+                                                      userInfo:@{kSBCache_RequestClassUserInfoKey: requestClass}];
 }
 
 - (void)flush
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSBCache_WillInvalidateCacheNotification object:self];
     [cacheProviders enumerateKeysAndObjectsWithOptions:NSEnumerationConcurrent usingBlock:^(id  _Nonnull key, SBCacheProvider * _Nonnull obj, BOOL * _Nonnull stop) {
         [obj flush];
     }];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kSBCache_DidInvalidateCacheNotification object:self];
 }
 
 @end

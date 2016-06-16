@@ -11,6 +11,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString * const kSBCache_WillInvalidateCacheForRequestNotification;
+extern NSString * const kSBCache_DidInvalidateCacheForRequestNotification;
+extern NSString * const kSBCache_WillInvalidateCacheNotification;
+extern NSString * const kSBCache_DidInvalidateCacheNotification;
+extern NSString * const kSBCache_RequestObjectUserInfoKey;
+extern NSString * const kSBCache_RequestClassUserInfoKey;
+
 typedef NS_ENUM(NSInteger, SBCachePolicy)
 {
     SBNoCachePolicy,

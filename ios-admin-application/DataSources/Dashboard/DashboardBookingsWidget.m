@@ -145,18 +145,22 @@ NSString * const kDashboardBookingsWidgetCellReuseIdentifier = @"kDashboardBooki
         NSIndexSet *toRemove = nil, *toInsert = nil, *toReload = nil;
         NSInteger resultItemsCount = [response.result count];
         if (self.items.count == resultItemsCount) {
-            toReload = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.items.count)];
+            if (resultItemsCount > 0) {
+                toReload = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.items.count)];
+            }
         }
         else if (self.items.count > resultItemsCount) {
-            toRemove = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange((resultItemsCount > 0 ? resultItemsCount - 1 : 0), self.items.count)];
-            toReload = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, resultItemsCount)];
+            toRemove = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange((resultItemsCount > 0 ? resultItemsCount - 0 : 0), self.items.count - resultItemsCount)];
+            if (resultItemsCount > 0) {
+                toReload = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, resultItemsCount)];
+            }
         }
         else {
             if (self.items.count > 0) {
-                toInsert = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(self.items.count - 1, resultItemsCount)];
+                toInsert = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(self.items.count, resultItemsCount - self.items.count)];
                 toReload = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.items.count)];
             }
-            else {
+            else if (resultItemsCount > 0) {
                 toInsert = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, resultItemsCount)];
             }
         }

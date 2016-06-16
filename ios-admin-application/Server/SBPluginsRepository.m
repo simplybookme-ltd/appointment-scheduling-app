@@ -36,6 +36,9 @@ NSString * _Nonnull const kSBPluginRepositoryUnitColorPlugin = @"unit_colors";
 /// @see http://wiki.simplybook.me/index.php/Plugins#Service_categories
 NSString * const kSBPluginRepositoryServiceCategoriesPlugin = @"event_category";
 
+/// @see http://wiki.simplybook.me/index.php/Plugins#Google_calendar_sync_plugin
+NSString * const kSBPluginRepositoryGoogleCalendarSyncPlugin = @"google_calendar_export";
+
 @implementation SBPluginsRepository
 {
     NSMutableDictionary <NSString *, NSNumber *> *repository;

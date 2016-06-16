@@ -51,6 +51,13 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
     [self.navigationController.navigationBar setBackgroundImage:nil
                                                  forBarPosition:UIBarPositionAny
                                                      barMetrics:UIBarMetricsDefault];
+    
+    SBUser *user = [SBSession defaultSession].user;
+    NSAssert(user != nil, @"no user found");
+    if (![user hasAccessToACLRule:SBACLRuleEditBooking]) {
+        self.navigationItem.rightBarButtonItem = nil;
+    }
+    
     /** UI hack */
     UIView *statusBarBackground = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
     statusBarBackground.translatesAutoresizingMaskIntoConstraints = NO;
@@ -112,16 +119,23 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
 
 - (void)loadData
 {
-    SBRequest *request = [[SBSession defaultSession] getBookingDetails:self.bookingID callback:^(SBResponse *response) {
+    SBRequest *request = [[SBSession defaultSession] getBookingDetails:self.bookingID callback:^(SBResponse<SBBookingInfo *> *response) {
         [pendingRequests removeObject:response.requestGUID];
         if (!response.error) {
+            if (self.booking && ![self.booking.clientID isEqualToString:response.result.clientID]) {
+                self.clientName = nil;
+                self.clientEmail = nil;
+                self.clientPhone = nil;
+            }
             self.booking = response.result;
-            [self reloadSections];
             dispatch_async(dispatch_get_main_queue(), ^{
-                if ([self.booking.isConfirmed boolValue]) {
+                self.activityIndicator.hidden = YES;
+                [self reloadSections];
+                SBUser *user = [SBSession defaultSession].user;
+                NSAssert(user != nil, @"no user found");
+                if ([self.booking.isConfirmed boolValue] && [user hasAccessToACLRule:SBACLRuleEditBooking]) {
                     [self showCancelBookingButton];
                 }
-                self.activityIndicator.hidden = YES;
                 self.navigationItem.rightBarButtonItem.enabled = YES;
                 self.cancelButton.enabled = YES;
                 [self.tableView reloadData];
@@ -144,6 +158,27 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
     self.navigationItem.rightBarButtonItem.enabled = NO;
     self.cancelButton.enabled = NO;
     [pendingRequests addObject:request.GUID];
+    [[SBSession defaultSession] performReqeust:request];
+}
+
+- (void)loadClientData
+{
+    NSAssert(self.booking != nil && self.booking.clientID != nil, @"invalid params");
+    SBRequest *request = [[SBSession defaultSession] getClientWithId:self.booking.clientID callback:^(SBResponse<NSDictionary *> * _Nonnull response) {
+        [pendingRequests removeObject:response.requestGUID];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.activityIndicator.hidden = YES;
+            if (!response.error) {
+                self.clientName = response.result[@"name"];
+                self.clientEmail = response.result[@"email"];
+                self.clientPhone = response.result[@"phone"];
+                [self reloadSections];
+                [self.tableView reloadData];
+            }
+        });
+    }];
+    [pendingRequests addObject:request.GUID];
+    self.activityIndicator.hidden = NO;
     [[SBSession defaultSession] performReqeust:request];
 }
 
@@ -190,8 +225,20 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
             [pendingRequests removeObject:response.requestGUID];
             NSInteger sectionIndex = [self.sections indexOfObject:self.approveBookingSection];
             if (!response.error) {
+                if (sectionIndex == NSNotFound) {
+                    [self reloadSections];
+                    return;
+                }
                 [self invalidateCaches];
                 self.sections[sectionIndex] = [self approveBookingSectionForApproveStatus:(approved ? kSBBookingInfoApproveStatusApproved : kSBBookingInfoApproveStatusCancelled)];
+                [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+                              withRowAnimation:UITableViewRowAnimationAutomatic];
+                self.activityIndicator.hidden = YES;
+                self.cancelButton.enabled = YES;
+                self.navigationItem.rightBarButtonItem.enabled = YES;
+                [[NSNotificationCenter defaultCenter] postNotificationName:kSBPendingBookings_DidUpdateNotification
+                                                                    object:self
+                                                                  userInfo:@{kSBPendingBookings_BookingIDKey: bookingID}];
             }
             else {
                 NSString *errorMessage = (approved ? NSLS(@"An error occurred during approving booking. Please try again later.",@"")
@@ -201,14 +248,6 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
                                                                delegate:nil cancelButtonTitle:NSLS(@"OK",@"") otherButtonTitles:nil];
                 [alert show];
             }
-            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-            self.activityIndicator.hidden = YES;
-            self.cancelButton.enabled = YES;
-            self.navigationItem.rightBarButtonItem.enabled = YES;
-            [[NSNotificationCenter defaultCenter] postNotificationName:kSBPendingBookings_DidUpdateNotification
-                                                                object:self
-                                                              userInfo:@{kSBPendingBookings_BookingIDKey: bookingID}];
         });
     }];
     self.activityIndicator.hidden = NO;
@@ -237,8 +276,22 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
     DSSectionDataSource *sectionDataSource = [DSSectionDataSource new];
     sectionDataSource.sectionTitle = NSLS(@"Approval Status",@"");
     if ([approveStatus isEqualToString:kSBBookingInfoApproveStatusNew]) {
-        sectionDataSource.cellReuseIdentifier = kBookingDetailsApproveStatusNewCellReuseIdentifier;
-        [sectionDataSource addItem:[KeyValueRow rowWithKey:@"status" value:self.booking.approveStatus]];
+        SBUser *user = [SBSession defaultSession].user;
+        NSAssert(user != nil, @"no user found");
+        if ([user hasAccessToACLRule:SBACLRuleEditBooking]) {
+            sectionDataSource.cellReuseIdentifier = kBookingDetailsApproveStatusNewCellReuseIdentifier;
+            [sectionDataSource addItem:[KeyValueRow rowWithKey:@"status" value:self.booking.approveStatus]];
+        }
+        else {
+            sectionDataSource.cellReuseIdentifier = kBookingDetailsKeyValueCellReuseIdentifier;
+            KeyValueRow *row = [KeyValueRow rowWithKey:NSLS(@"Status:",@"") value:@""];
+            row.accessoryView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 10, 10)];
+            row.accessoryView.layer.cornerRadius = row.accessoryView.frame.size.width / 2.;
+            row.accessoryView.layer.masksToBounds = YES;
+            row.value = NSLS(@"New",@"");
+            row.accessoryView.backgroundColor = [UIColor colorWithRed:0.34 green:0.67 blue:0.88 alpha:1.000];
+            [sectionDataSource addItem:row];
+        }
     }
     else {
         sectionDataSource.cellReuseIdentifier = kBookingDetailsKeyValueCellReuseIdentifier;
@@ -330,6 +383,8 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
             [clientSection addItem:email];
         }
         [self.sections addObject:clientSection];
+    } else if (self.booking.clientID) {
+        [self loadClientData];
     }
     
     if (self.booking.location) {
@@ -579,6 +634,9 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
     controller.bookingForm.startDate = self.booking.startDate;
     controller.bookingForm.startTime = self.booking.startDate;
     controller.bookingForm.endTime = self.booking.endDate;
+    if (self.booking.location) {
+        controller.bookingForm.locationID = self.booking.location.locationID;
+    }
     if (self.clientEmail && self.clientName && self.clientPhone) {
         controller.bookingForm.client = @{@"id": self.booking.clientID,
                                           @"name": self.clientName,

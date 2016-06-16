@@ -10,6 +10,7 @@
 #import "CalendarDataSource.h"
 #import "CalendarGridCollectionViewLayout.h"
 #import "SBGetBookingsFilter.h"
+#import "SBGetBookingsRequest.h"
 #import "CalendarListCollectionViewLayout.h"
 #import "UIColor+SimplyBookColors.h"
 #import "NSDate+TimeManipulation.h"
@@ -31,6 +32,9 @@
 #import "SBBookingStatusesCollection.h"
 #import "SBPluginsRepository.h"
 #import "SBPerformer.h"
+#import "SBCache.h"
+#import "SBReachability.h"
+#import "SBUser.h"
 
 @interface CalendarDayViewController () <UIGestureRecognizerDelegate>
 {
@@ -41,6 +45,7 @@
 @property (nonatomic, weak) IBOutlet UICollectionView *collectionView;
 @property (nonatomic, weak) IBOutlet UIActivityIndicatorView *activityIndicator;
 @property (nonatomic, weak) IBOutlet UILabel *noWorkingHoursLabel;
+@property (nonatomic, weak) IBOutlet UILabel *noCollectionLabel;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 @property (nonatomic, strong) CalendarDataSource *calendarDataSource;
 @property (nonatomic, strong) CalendarGridCollectionViewLayout *calendarGridLayout;
@@ -56,6 +61,12 @@
     // Do any additional setup after loading the view.
     self.filter = [SBGetBookingsFilter todayBookingsFilter];
     self.filter.order = kSBGetBookingsFilterOrderByStartDate;
+    SBUser *user = [SBSession defaultSession].user;
+    NSAssert(user != nil, @"no user found");
+    if (![user hasAccessToACLRule:SBACLRulePerformersFullListAccess]) {
+        NSAssert(user.associatedPerformerID != nil && ![user.associatedPerformerID isEqualToString:@""], @"invalid associated performer value");
+        self.filter.unitGroupID = user.associatedPerformerID;
+    }
 
     self.weekView.backgroundColor = [UIColor sb_navigationBarColor];
     __weak typeof (self) weakSelf = self;
@@ -104,35 +115,61 @@
     [self.calendarListLayout finilize];
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didInvalidateCacheNotificationHandler:)
+                                                 name:kSBCache_DidInvalidateCacheForRequestNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didInvalidateCacheNotificationHandler:)
+                                                 name:kSBCache_DidInvalidateCacheNotification object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSBCache_DidInvalidateCacheForRequestNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSBCache_DidInvalidateCacheNotification object:nil];
+}
+
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    if (appDelegate.pushNotification) {
-        [self.navigationController popToRootViewControllerAnimated:YES];
-        NSString *push = appDelegate.pushNotification[@"aps"][@"alert"];
-        push = [[push componentsSeparatedByString:@" at "] lastObject];
-        NSDate *date = [[NSDateFormatter sb_pushNotificationTimeParser] dateFromString:push];
-        self.filter.from = date;
-        self.filter.to = date;
-        [self.weekView setSelectedDate:date animated:YES];
-        [self.refreshControl beginRefreshing];
-        [self refreshAction:nil];
-        appDelegate.pushNotification = nil;
-    }
-    else {
-        SBRequest *checkPluginRequest = [[SBSession defaultSession] isPluginActivated:kSBPluginRepositoryApproveBookingPlugin callback:^(SBResponse<NSNumber *> * _Nonnull response) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryApproveBookingPlugin enabled:[response.result boolValue]];
-                self.activityIndicator.hidden = YES;
-                self.filter = [SBGetBookingsFilter todayBookingsFilter];
-                self.filter.order = kSBGetBookingsFilterOrderByStartDate;
-                [self loadData];
-            });
-        }];
-        self.activityIndicator.hidden = NO;
-        [[SBSession defaultSession] performReqeust:checkPluginRequest];
-    }
+    
+    SBReachability *reach = [SBReachability reachabilityWithHostname:kSBReachabilityHostname];
+    reach.reachabilityBlock = ^(SBReachability *reachability, SCNetworkConnectionFlags flags) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            if (flags & kSCNetworkFlagsReachable) {
+                self.noCollectionLabel.hidden = YES;
+                AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                if (appDelegate.pushNotification) {
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                    NSString *push = appDelegate.pushNotification[@"aps"][@"alert"];
+                    push = [[push componentsSeparatedByString:@" at "] lastObject];
+                    NSDate *date = [[NSDateFormatter sb_pushNotificationTimeParser] dateFromString:push];
+                    self.filter.from = date;
+                    self.filter.to = date;
+                    [self.weekView setSelectedDate:date animated:YES];
+                    [self.refreshControl beginRefreshing];
+                    [self refreshAction:nil];
+                    appDelegate.pushNotification = nil;
+                }
+                else {
+                    SBRequest *checkPluginRequest = [[SBSession defaultSession] isPluginActivated:kSBPluginRepositoryApproveBookingPlugin callback:^(SBResponse<NSNumber *> * _Nonnull response) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryApproveBookingPlugin enabled:[response.result boolValue]];
+                            self.activityIndicator.hidden = YES;
+                            [self loadData];
+                        });
+                    }];
+                    self.activityIndicator.hidden = NO;
+                    [[SBSession defaultSession] performReqeust:checkPluginRequest];
+                }
+            } else {
+                self.noCollectionLabel.hidden = NO;
+            }
+        });
+    };
+    [reach startNotifier];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
@@ -153,6 +190,14 @@
     [self.weekView traitCollectionDidChange:previousTraitCollection];
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
+{
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    [coordinator animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+        [self.weekView reloadData];
+    }];
+}
+
 - (void)loadData
 {
     NSAssert(self.filter != nil, @"no filter");
@@ -170,6 +215,13 @@
         timeframeStep = [companyInfo.timeframe integerValue];
     }];
     [group addRequest:loadCompanyInfoRequest];
+    
+    SBRequest *pluginCheckRequest = [session isPluginActivated:kSBPluginRepositoryGoogleCalendarSyncPlugin callback:^(SBResponse<NSNumber *> * _Nonnull response) {
+        if (response.result) {
+            [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryGoogleCalendarSyncPlugin enabled:[response.result boolValue]];
+        }
+    }];
+    [group addRequest:pluginCheckRequest];
 
     __block NSDictionary *workingHours = nil;
     SBRequest *loadTimeframeRequest = [session getWorkDaysTimesForDate:self.filter.from callback:^(SBResponse *response) {
@@ -178,12 +230,24 @@
     [group addRequest:loadTimeframeRequest];
 
     NSMutableArray *sections = [NSMutableArray array];
+    __block SBPerformersCollection *performers = nil;
     SBRequest *loadPerformersRequest = [session getUnitList:^(SBResponse<SBPerformersCollection *> *response) {
         [sections removeAllObjects];
+        SBUser *user = [SBSession defaultSession].user;
+        NSAssert(user != nil, @"no user found");
+        if ([user hasAccessToACLRule:SBACLRulePerformersFullListAccess]) {
+            performers = response.result;
+        } else {
+            NSAssert(user.associatedPerformerID != nil && ![user.associatedPerformerID isEqualToString:@""], @"invalid associated performer value");
+            performers = [response.result collectionWithObjectsPassingTest:^BOOL(SBPerformer * _Nonnull object, NSUInteger idx, BOOL * _Nonnull stop) {
+                *stop = [object.performerID isEqualToString:user.associatedPerformerID];
+                return *stop;
+            }];
+        }
         NSPredicate *sectionPredicate = [NSPredicate predicateWithBlock:^BOOL(NSObject<SBBookingProtocol> * evaluatedObject, NSDictionary *bindings) {
             return [evaluatedObject.performerID isEqualToString:bindings[kCalendarSectionDataSourcePerformerIDBindingKey]];
         }];
-        [response.result enumerateUsingBlock:^(NSString * _Nonnull performerID, SBPerformer * _Nonnull performer, BOOL * _Nonnull stop) {
+        [performers enumerateUsingBlock:^(NSString * _Nonnull performerID, SBPerformer * _Nonnull performer, BOOL * _Nonnull stop) {
             NSDictionary *bindings = @{kCalendarSectionDataSourcePerformerIDBindingKey: performerID};
             CalendarSectionDataSource *section = [[CalendarSectionDataSource alloc] initWithTitle:performer.name
                                                                                         predicate:sectionPredicate
@@ -214,20 +278,26 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             self.activityIndicator.hidden = YES;
             if (response.error) {
-                if (!response.canceled) {
+                if (!response.canceled && !response.error.isNetworkConnectionError) {
                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
                                                                     message:[response.error message]
                                                                    delegate:nil cancelButtonTitle:NSLS(@"OK",@"")
                                                           otherButtonTitles:nil];
                     [alert show];
                 }
+                else if (response.error.isNetworkConnectionError) {
+                    self.noCollectionLabel.hidden = NO;
+                }
             } else {
                 self.loading = NO;
+                [self processBookings:bookings];
+                [self processPerformers:performers];
                 [self.calendarDataSource setTimeframeStep:timeframeStep];
                 SBWorkingHoursMatrix *workingHoursMatrix = [[SBWorkingHoursMatrix alloc] initWithData:workingHours forDate:self.filter.from];
                 [workingHoursMatrix updateDatesUsingBookingsInfo:bookings];
                 [self.calendarGridLayout setWorkingHoursMatrix:workingHoursMatrix];
                 [self.calendarListLayout setWorkingHoursMatrix:workingHoursMatrix];
+                [self.calendarDataSource setPerformers:performers];
                 [self.calendarDataSource setWorkingHoursMatrix:workingHoursMatrix];
                 [self.calendarDataSource setSections:sections];
                 [self.calendarDataSource setStatusesCollection:statuses];
@@ -236,6 +306,7 @@
                 [self.collectionView.collectionViewLayout invalidateLayout];
                 [self.collectionView setContentOffset:CGPointZero animated:YES];
                 self.noWorkingHoursLabel.hidden = (workingHoursMatrix.hours.count != 0);
+                [self loadGoogleCalendarBusiTime];
             }
         });
     };
@@ -243,6 +314,59 @@
     [pendingRequests addObject:group.GUID];
     self.loading = YES;
     [session performReqeust:group];
+}
+
+- (SBRequest *)requestForGoogleCalendarBusyTime
+{
+    if ([[SBPluginsRepository repository] isPluginEnabled:kSBPluginRepositoryGoogleCalendarSyncPlugin] == nil) {
+        SBRequest *pluginCheckRequest = [[SBSession defaultSession] isPluginActivated:kSBPluginRepositoryGoogleCalendarSyncPlugin callback:^(SBResponse<id> * _Nonnull response) {
+            [pendingRequests removeObject:response.requestGUID];
+            if (response.result) {
+                [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryGoogleCalendarSyncPlugin enabled:[response.result boolValue]];
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self loadGoogleCalendarBusiTime];
+            });
+        }];
+        return pluginCheckRequest;
+    }
+    if (!self.calendarDataSource || !self.calendarDataSource.sections || ![[SBPluginsRepository repository] isPluginEnabled:kSBPluginRepositoryGoogleCalendarSyncPlugin].boolValue) {
+        return nil;
+    }
+    SBRequestsGroup *group = [SBRequestsGroup new];
+    NSDate *from = [self.filter.from dateWithZeroTime];
+    NSDate *to = [from nextDayDate];
+    for (CalendarSectionDataSource *section in self.calendarDataSource.sections) {
+        SBRequest *r = [[SBSession defaultSession] getGoogleCalendarBusyTimeFromDate:from toDate:to
+                                                                              unitID:(NSString *)section.sectionID
+                                                                            callback:^(SBResponse<id> * _Nonnull response)
+        {
+            if (!response.error) {
+                [self.calendarDataSource setGoogleCalendarBusyTime:response.result forSectionID:(NSString *)section.sectionID];
+            }
+        }];
+        [group addRequest:r];
+    }
+    group.callback = ^(SBResponse *response) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [pendingRequests removeObject:response.requestGUID];
+            self.loading = NO;
+            self.activityIndicator.hidden = YES;
+            [self.collectionView.collectionViewLayout invalidateLayout];
+        });
+    };
+    return group;
+}
+
+- (void)loadGoogleCalendarBusiTime
+{
+    SBRequest *request = [self requestForGoogleCalendarBusyTime];
+    if (request) {
+        self.loading = YES;
+        self.activityIndicator.hidden = NO;
+        [pendingRequests addObject:request.GUID];
+        [[SBSession defaultSession] performReqeust:request];
+    }
 }
 
 #pragma mark - Actions
@@ -254,6 +378,10 @@
         [pendingRequests removeObject:response.requestGUID];
         if (response.error && !response.canceled) {
             dispatch_async(dispatch_get_main_queue(), ^{
+                if (response.error.isNetworkConnectionError) {
+                    self.noCollectionLabel.hidden = NO;
+                    return;
+                }
                 [self.refreshControl endRefreshing];
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
                                                                 message:[response.error message]
@@ -264,11 +392,13 @@
             return ;
         }
         dispatch_async(dispatch_get_main_queue(), ^{
+            [self processBookings:response.result];
             [self.refreshControl endRefreshing];
             [self.calendarDataSource setBookings:response.result sortingStrategy:CalendarGridBookingsLayoutSortingStrategy];
             [self.collectionView reloadData];
             [self.collectionView.collectionViewLayout invalidateLayout];
             [self.collectionView setContentOffset:CGPointZero animated:YES];
+            [self loadGoogleCalendarBusiTime];
         });
     }];
     request.cachePolicy = SBIgnoreCachePolicy;
@@ -328,6 +458,16 @@
 {
     [self.calendarGridLayout finilize];
     [self.calendarListLayout finilize];
+}
+
+- (void)didInvalidateCacheNotificationHandler:(NSNotification *)notification
+{
+    if ((notification.userInfo[kSBCache_RequestObjectUserInfoKey] && [notification.userInfo[kSBCache_RequestObjectUserInfoKey] isKindOfClass:[SBGetBookingsRequest class]])
+        || (notification.userInfo[kSBCache_RequestClassUserInfoKey] && [notification.userInfo[kSBCache_RequestClassUserInfoKey] isSubclassOfClass:[SBGetBookingsRequest class]])) {
+        [self refreshAction:nil];
+    } else if ([notification.name isEqualToString:kSBCache_DidInvalidateCacheNotification]) {
+        [self loadData];
+    }
 }
 
 #pragma mark - Gesture Recognizer Delegate

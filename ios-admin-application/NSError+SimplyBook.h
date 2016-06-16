@@ -11,5 +11,6 @@
 @interface NSError (SimplyBook)
 
 - (NSString *)message;
+- (BOOL)isNetworkConnectionError;
 
 @end

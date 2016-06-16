@@ -37,7 +37,9 @@
     NSAssert(self.companyLogin != nil, @"company login can't be nil");
     NSAssert(self.login != nil, @"login can't be nil");
     NSAssert(self.password != nil, @"password can't be nil");
-    return @[[self.companyLogin lowercaseString], self.login, self.password];
+    return @[self.companyLogin ? [self.companyLogin lowercaseString] : @"",
+             self.login ? self.login : @"",
+             self.password ? self.password : @""];
 }
 
 - (SBResultProcessor *)resultProcessor

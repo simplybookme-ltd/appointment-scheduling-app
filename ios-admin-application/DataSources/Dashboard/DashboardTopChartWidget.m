@@ -206,9 +206,13 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
             CGFloat work = 0;
             CGFloat load = 0;
             for (NSDictionary *workloadForDay in [response.result allValues]) {
-                if (workloadForDay[performerID] && [workloadForDay[performerID] count] > loadIndex) {
-                    work += [workloadForDay[performerID][workIndex] floatValue];
-                    load += [workloadForDay[performerID][loadIndex] floatValue];
+                if (workloadForDay[performerID] && [workloadForDay[performerID] isKindOfClass:[NSArray class]] && [workloadForDay[performerID] count] > loadIndex) {
+                    if (![workloadForDay[performerID][workIndex] isEqual:[NSNull null]]) {
+                        work += [workloadForDay[performerID][workIndex] floatValue];
+                    }
+                    if (![workloadForDay[performerID][loadIndex] isEqual:[NSNull null]]) {
+                        load += [workloadForDay[performerID][loadIndex] floatValue];
+                    }
                 }
             }
             workingHours = work / 60.;
@@ -235,9 +239,13 @@ NSString * const kDashboardTopChartWidgetCellReuseIdentifier = @"kDashboardTopCh
                                @"value" : [NSString stringWithFormat:@"%.0f %@", workingHours, NSLS(@"h",@"")],
                                @"icon" : @"dashboard-topchart-widget-hours"
                                }];
+            NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+            [formatter setNumberStyle:NSNumberFormatterPercentStyle];
+            [formatter setMaximumFractionDigits:2];
+            [formatter setMultiplier:@1];
             [items addObject:@{
                                @"key" : NSLS(@"Occupancy percentage",@""),
-                               @"value" : [NSString stringWithFormat:@"%.2f%%", workload],
+                               @"value" : (work == 0 ? @"--" : [formatter stringFromNumber:@(workload)]),
                                @"icon" : @"dashboard-topchart-widget-workload"
                                }];
             [items addObject:@{

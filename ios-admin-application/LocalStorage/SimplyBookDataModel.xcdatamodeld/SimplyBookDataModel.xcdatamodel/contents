@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="10171" systemVersion="15E65" minimumToolsVersion="Xcode 7.0">
+    <entity name="LSBooking" representedClassName="LSBooking" syncable="YES">
+        <attribute name="bookingID" attributeType="String" syncable="YES"/>
+        <attribute name="clientEmail" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="clientID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="clientName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="clientPhone" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="endDate" attributeType="Date" syncable="YES"/>
+        <attribute name="eventTitle" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isConfirmed" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="lastUpdate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="paymentStatus" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="paymentSystem" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="performerID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="performerName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="recordDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="searchID" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="startDate" attributeType="Date" syncable="YES"/>
+        <attribute name="statusID" optional="YES" attributeType="String" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="startDate"/>
+                <index value="endDate"/>
+            </compoundIndex>
+            <compoundIndex>
+                <index value="searchID"/>
+                <index value="lastUpdate"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="LSBookingStatus" representedClassName="LSBookingStatus" syncable="YES">
+        <attribute name="hexColor" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isDefault" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="lastUpdate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="searchID" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="statusID" optional="YES" attributeType="String" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="lastUpdate"/>
+                <index value="searchID"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <entity name="LSPerformer" representedClassName="LSPerformer" syncable="YES">
+        <attribute name="color" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isActive" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isVisible" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="lastUpdate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="performerDescription" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="performerID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="phone" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="picture" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="picturePath" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="position" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="searchID" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <compoundIndexes>
+            <compoundIndex>
+                <index value="position"/>
+                <index value="searchID"/>
+                <index value="lastUpdate"/>
+            </compoundIndex>
+        </compoundIndexes>
+    </entity>
+    <elements>
+        <element name="LSBooking" positionX="-63" positionY="-18" width="128" height="300"/>
+        <element name="LSPerformer" positionX="-63" positionY="108" width="128" height="240"/>
+        <element name="LSBookingStatus" positionX="-54" positionY="144" width="128" height="135"/>
+    </elements>
+</model>

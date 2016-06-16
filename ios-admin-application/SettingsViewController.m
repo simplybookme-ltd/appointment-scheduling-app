@@ -13,6 +13,10 @@
 #import "AppDelegate.h"
 #import "SBSessionManager.h"
 #import "ACHKeyValueTableViewCell.h"
+#import "LSManagedObjectContext.h"
+#import "LSPerformer.h"
+#import "LSBooking.h"
+#import "LSBookingStatus.h"
 
 NS_ENUM(NSInteger, SettingsSections)
 {
@@ -222,11 +226,11 @@ NS_ENUM(NSInteger, ActionsSectionItems)
         switch (indexPath.row) {
             case CompanyLoginItem:
                 cell.titleLabel.text = NSLS(@"Company:", @"");
-                cell.valueLabel.text = [SBSession defaultSession].companyLogin;
+                cell.valueLabel.text = [SBSession defaultSession].user.credentials.companyLogin;
                 break;
             case UserLoginItem:
                 cell.titleLabel.text = NSLS(@"Login:", @"");
-                cell.valueLabel.text = [SBSession defaultSession].userLogin;
+                cell.valueLabel.text = [SBSession defaultSession].user.login;
                 break;
             case AppVersionItem: {
                 cell.titleLabel.text = NSLS(@"Version:", @"");
@@ -266,6 +270,21 @@ NS_ENUM(NSInteger, ActionsSectionItems)
         [self removeObservers];
         SBSessionManager *manager = [SBSessionManager sharedManager];
         [manager endSession:manager.defaultSession];
+        
+        LSManagedObjectContext *context = [[LSManagedObjectContext alloc] init];
+        NSArray *objects = [context fetchObjectOfEntity:NSStringFromClass([LSPerformer class]) withPredicate:nil error:nil];
+        for (NSManagedObject *object in objects) {
+            [context deleteObject:object];
+        }
+        objects = [context fetchObjectOfEntity:NSStringFromClass([LSBooking class]) withPredicate:nil error:nil];
+        for (NSManagedObject *object in objects) {
+            [context deleteObject:object];
+        }
+        objects = [context fetchObjectOfEntity:NSStringFromClass([LSBookingStatus class]) withPredicate:nil error:nil];
+        for (NSManagedObject *object in objects) {
+            [context deleteObject:object];
+        }
+        [context save:nil];
     }
 }
 

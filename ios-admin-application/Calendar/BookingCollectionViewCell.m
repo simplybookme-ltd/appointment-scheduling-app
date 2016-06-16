@@ -37,8 +37,8 @@
     NSString *statusString = (statusColor ? @"• " : @"");
     NSMutableString *string = [[NSMutableString alloc] initWithString:statusString];
     [string appendString:time];
-    NSRange performerSubpartRange;
-    NSRange clientSubpartRange;
+    NSRange performerSubpartRange = NSRangeZero;
+    NSRange clientSubpartRange = NSRangeZero;
     NSString *clue = @"\n";
     if (service) {
         [string appendFormat:@"%@%@", clue, service];

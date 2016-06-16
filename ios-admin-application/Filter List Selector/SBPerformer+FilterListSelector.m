@@ -7,6 +7,7 @@
 //
 
 #import "SBPerformer+FilterListSelector.h"
+#import "UIColor+SimplyBookColors.h"
 
 @implementation SBPerformer (FilterListSelector)
 
@@ -30,6 +31,14 @@
         [subtitle appendString:self.phone];
     }
     return subtitle;
+}
+
+- (UIColor *)colorObject
+{
+    if (self.color) {
+        return [UIColor colorFromHEXString:self.color];
+    }
+    return nil;
 }
 
 @end

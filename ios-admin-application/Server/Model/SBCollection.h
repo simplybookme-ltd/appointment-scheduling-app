@@ -54,4 +54,11 @@ typedef NSObject <SBCollectionEntryProtocol, SBCollectionSortingProtocol> SBColl
 
 @end
 
+@interface SBMutableCollection <__covariant ObjectType : SBCollectionEntry *> : SBCollection
+
+- (void)addObject:(ObjectType)object;
+- (void)removeAll;
+
+@end
+
 NS_ASSUME_NONNULL_END

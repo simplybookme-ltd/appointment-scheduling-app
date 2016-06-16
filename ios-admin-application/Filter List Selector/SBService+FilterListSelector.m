@@ -39,4 +39,9 @@
     return subtitle;
 }
 
+- (UIColor *)colorObject
+{
+    return nil;
+}
+
 @end

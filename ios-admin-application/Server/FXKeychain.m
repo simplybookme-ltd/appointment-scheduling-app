@@ -158,7 +158,6 @@
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, (CFTypeRef *)&data);
 	if (status != errSecSuccess && status != errSecItemNotFound)
     {
-		NSLog(@"FXKeychain failed to retrieve data for key '%@', error: %ld", key, (long)status);
 	}
 	return CFBridgingRelease(data);
 }
@@ -246,7 +245,6 @@
 		}
         if (status != errSecSuccess)
         {
-            NSLog(@"FXKeychain failed to store data for key '%@', error: %ld", key, (long)status);
             return NO;
         }
     }
@@ -269,7 +267,6 @@
 #endif
         if (status != errSecSuccess)
         {
-            NSLog(@"FXKeychain failed to delete data for key '%@', error: %ld", key, (long)status);
             return NO;
         }
     }
@@ -323,10 +320,6 @@
         {
             //may be a string
             object = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        }
-        if (!object)
-        {
-             NSLog(@"FXKeychain failed to decode data for key '%@', error: %@", key, error);
         }
         return object;
     }

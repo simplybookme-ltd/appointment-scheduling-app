@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface SBBookingInfoLocation : NSObject
 
-@property (nonatomic, copy) NSNumber * locationID;
+@property (nonatomic, copy) NSString * locationID;
 @property (nonatomic, copy, nullable) NSString * addressOne;
 @property (nonatomic, copy, nullable) NSString * addressTwo;
 @property (nonatomic, copy, nullable) NSString * city;

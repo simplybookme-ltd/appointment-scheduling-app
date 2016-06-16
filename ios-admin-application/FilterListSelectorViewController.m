@@ -7,6 +7,7 @@
 //
 
 #import "FilterListSelectorViewController.h"
+#import "FilterListSelectorTableViewCell.h"
 
 @interface FilterListSelectorViewController () <UISearchResultsUpdating>
 
@@ -27,6 +28,7 @@
     self.searchController.dimsBackgroundDuringPresentation = NO;
     [self.searchController.searchBar sizeToFit];
     self.tableView.tableHeaderView = self.searchController.searchBar;
+    [self.tableView registerNib:[UINib nibWithNibName:@"FilterListSelectorTableViewCell" bundle:nil] forCellReuseIdentifier:@"cell"];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -69,16 +71,24 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
+    FilterListSelectorTableViewCell *cell = (FilterListSelectorTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
     if (self.searchController.active) {
-        cell.textLabel.text = self.filteredData[indexPath.row].name;
+        cell.titleLabel.text = self.filteredData[indexPath.row].name;
     } else {
         if (indexPath.row == 0 && [self isAnyItemEnabled]) {
-            cell.textLabel.text = NSLS(@"Any",@"");
-            cell.detailTextLabel.text = @"";
+            cell.titleLabel.text = NSLS(@"Any",@"");
+            cell.subtitleLabel.text = @"";
+            cell.colorMarkView.hidden = YES;
         } else {
-            cell.textLabel.text = self.collection[indexPath.row - ([self isAnyItemEnabled] ? 1 : 0)].title;
-            cell.detailTextLabel.text = self.collection[indexPath.row - ([self isAnyItemEnabled] ? 1 : 0)].subtitle;
+            NSObject <FilterListSelectorItemProtocol> *item = self.collection[indexPath.row - ([self isAnyItemEnabled] ? 1 : 0)];
+            cell.titleLabel.text = item.title;
+            cell.subtitleLabel.text = item.subtitle;
+            UIColor *color = item.colorObject;
+            if (color) {
+                cell.colorMarkView.backgroundColor = color;
+            } else {
+                cell.colorMarkView.hidden = YES;
+            }
         }
     }
     return cell;

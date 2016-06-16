@@ -10,6 +10,7 @@
 #import "CalendarLayoutAttributes.h"
 
 static NSString * kCalendarCellDecorationViewKind = @"kCalendarCellDecorationViewKind";
+NSString *_Nonnull const kHorizontalLineDecorationViewKind = @"kHorizontalLineDecorationViewKind";
 
 @implementation CalendarCellDecorationView
 

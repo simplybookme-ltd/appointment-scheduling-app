@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithStatusesList:(NSArray <NSDictionary <NSString *, NSString *> *> *)list;
 
+- (NSArray <SBBookingStatus *> *)allObjects;
 - (NSUInteger)indexForObject:(SBBookingStatus *)object;
 - (SBBookingStatus *)objectAtIndexedSubscript:(NSUInteger)idx;
 - (nullable SBBookingStatus *)objectForKeyedSubscript:(NSString *)statusID;

@@ -10,6 +10,8 @@
 #import "SBGetBookingsFilter.h"
 #import "FilterViewController.h"
 #import "UIColor+SimplyBookColors.h"
+#import "SBSession.h"
+#import "SBUser.h"
 
 typedef NS_ENUM(NSInteger, CalendarViewType)
 {
@@ -20,6 +22,7 @@ typedef NS_ENUM(NSInteger, CalendarViewType)
 @interface CalendarViewController () <FilterViewControllerDelegate>
 
 @property (nonatomic, weak, nullable) UIViewController <CalendarViewContainerChildController> *childController;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *addBookingBarButton;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *filterBarButton;
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *preferencesBarButton;
 @property (nonatomic, weak, nullable) SwipeContainerViewController *swipeContainer;
@@ -49,6 +52,12 @@ typedef NS_ENUM(NSInteger, CalendarViewType)
             self.navigationItem.rightBarButtonItems = items;
             self.preferencesBarButton = nil;
         }
+    }
+    
+    SBUser *user = [SBSession defaultSession].user;
+    NSAssert(user != nil, @"no user found");
+    if (![user hasAccessToACLRule:SBACLRuleEditBooking]) {
+        self.addBookingBarButton.enabled = NO;
     }
 
     UISegmentedControl *control = [[UISegmentedControl alloc] initWithItems:@[NSLS(@"Day",@""), NSLS(@"Week",@"")]];

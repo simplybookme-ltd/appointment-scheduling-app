@@ -18,7 +18,7 @@ NSString * const kDashboardClientsActivityWidgetCellReuseIdentifier = @"kDashboa
 @interface ClientsActivityWidgetBookingsSegment : DashboardSegmentDataSource
 @end
 
-@interface ClientsActivityWidgetCancelationsSegment : DashboardSegmentDataSource
+@interface ClientsActivityWidgetCancellationsSegment : DashboardSegmentDataSource
 @end
 
 @interface DashboardClientsActivityWidget () <XYPieChartDataSource>
@@ -42,9 +42,9 @@ NSString * const kDashboardClientsActivityWidgetCellReuseIdentifier = @"kDashboa
         activityByBookingsDS.title = NSLS(@"Bookings",@"");
         [self addSegmentDataSource:activityByBookingsDS];
         
-        ClientsActivityWidgetCancelationsSegment *activityByCancelationsDS = [ClientsActivityWidgetCancelationsSegment new];
-        activityByCancelationsDS.title = NSLS(@"Cancelations",@"");
-        [self addSegmentDataSource:activityByCancelationsDS];
+        ClientsActivityWidgetCancellationsSegment *activityByCancellationsDS = [ClientsActivityWidgetCancellationsSegment new];
+        activityByCancellationsDS.title = NSLS(@"Cancellations",@"");
+        [self addSegmentDataSource:activityByCancellationsDS];
     }
     return self;
 }
@@ -188,7 +188,7 @@ NSString * const kDashboardClientsActivityWidgetCellReuseIdentifier = @"kDashboa
 
 @end
 
-@implementation ClientsActivityWidgetCancelationsSegment
+@implementation ClientsActivityWidgetCancellationsSegment
 
 - (SBRequest *)dataLoadingRequest
 {

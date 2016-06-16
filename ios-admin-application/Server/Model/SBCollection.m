@@ -18,6 +18,16 @@
 
 @implementation SBCollection
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.objects = [NSMutableDictionary dictionary];
+        self.sortedKeys = [self sortedKeysForObjects:self.objects];
+    }
+    return self;
+}
+
 - (nullable instancetype)initWithDictionary:(NSDictionary <NSString *, id> *)dictionary builder:(NSObject <SBCollectionEntryBuilderProtocol> *)builder
 {
     return [self initWithArray:[dictionary allValues] builder:builder];
@@ -148,6 +158,22 @@
         return test(self.objects[obj], idx, stop);
     }];
     return [self objectsAtIndexes:indexes];
+}
+
+@end
+
+@implementation SBMutableCollection
+
+- (void)addObject:(SBCollectionEntry *)object
+{
+    [self.objects setObject:object forKey:object.id];
+    self.sortedKeys = [self sortedKeysForObjects:self.objects];
+}
+
+- (void)removeAll
+{
+    [self.objects removeAllObjects];
+    self.sortedKeys = [self sortedKeysForObjects:self.objects];
 }
 
 @end

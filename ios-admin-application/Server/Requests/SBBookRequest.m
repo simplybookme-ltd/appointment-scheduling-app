@@ -32,6 +32,9 @@
     for (SBAdditionalField *field in self.formData.additionalFields) {
         encodedFields[field.name] = field.value;
     }
+    if (self.formData.locationID && ![self.formData.locationID isEqualToString:@""]) {
+        encodedFields[@"location_id"] = self.formData.locationID;
+    }
     return @[self.formData.eventID ? self.formData.eventID : @"0",
              self.formData.unitID ? self.formData.unitID : @"0",
              self.formData.client[@"id"] ? self.formData.client[@"id"] : [NSNull null],

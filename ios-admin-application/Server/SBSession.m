@@ -17,6 +17,7 @@
 #import "SBGetEventListRequest.h"
 #import "SBGetUserTokenRequest.h"
 #import "SBGetClientListRequest.h"
+#import "SBGetClientRequest.h"
 #import "SBAddClientRequest.h"
 #import "SBGetAdditionalFieldsRequest.h"
 #import "SBBookRequest.h"
@@ -41,8 +42,11 @@
 #import "SBPluginApproveGetPendingBookingsRequest.h"
 #import "SBPluginsRepository.h"
 #import "SBGetCompanyParamRequest.h"
+#import "SBGetGoogleCalendarBusyTimeRequest.h"
+#import "SBGetLocationsListRequest.h"
 
 #define SBSessionStorageKeyForCompanyLogin(companyLogin) ([NSString stringWithFormat:@"SBSessionStorageKey-%@", (companyLogin)])
+#define SBSessionStorageKeyForDomainString(companyLogin) ([NSString stringWithFormat:@"SBSessionStorageKeyForDomainString-%@", (companyLogin)])
 
 NSString * const kSBPendingBookings_DidUpdateNotification = @"kSBPendingBookings_DidUpdateNotification";
 NSString * const kSBPendingBookings_BookingIDKey = @"kSBPendingBookings_BookingIDKey";
@@ -55,9 +59,8 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     NSOperationQueue *queue;
 }
 
-@property (nonatomic, readwrite, copy) NSString *companyLogin;
+@property (nonatomic, readwrite, strong) SBUser *user;
 @property (nonatomic, copy) NSString *token;
-@property (nonatomic, copy) SBSessionCredentials *credentials;
 
 @end
 
@@ -68,29 +71,24 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     return [[SBSessionManager sharedManager] defaultSession];
 }
 
-+ (instancetype)restoreSessionWithCompanyLogin:(NSString *)companyLogin
+- (instancetype)initWithUser:(SBUser *)user token:(NSString *)token domain:(NSString *)domain
 {
-    NSParameterAssert(companyLogin != nil);
-    NSParameterAssert(![companyLogin isEqualToString:@""]);
-    NSString *token = [[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForCompanyLogin(companyLogin)];
-    if (token) {
-        return [[self alloc] initWithCompanyLogin:companyLogin token:token];
-    }
-    return nil;
-}
-
-- (instancetype)initWithCompanyLogin:(NSString *)companyLogin token:(NSString *)token
-{
-    NSAssert(companyLogin != nil, @"no company login");
-    NSAssert(![companyLogin isEqualToString:@""], @"no company login");
+    NSAssert(user != nil, @"no user login");
     NSAssert(token != nil, @"no token");
     NSAssert(![token isEqualToString:@""], @"no token");
     self = [super init];
     if (self) {
-        self.companyLogin = companyLogin;
         self.token = token;
+        self.user = user;
         [self writeTokenToStorage];
         queue = [NSOperationQueue new];
+        if (domain && ![domain isEqualToString:@""]) {
+            [SBRequestOperation setDomainString:domain];
+            [[NSUserDefaults standardUserDefaults] setObject:domain forKey:SBSessionStorageKeyForDomainString(user.credentials.companyLogin)];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+        } else if ([[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForDomainString(user.credentials.companyLogin)]) {
+            [SBRequestOperation setDomainString:[[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForDomainString(user.credentials.companyLogin)]];
+        }
     }
     return self;
 }
@@ -99,26 +97,20 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
 {
     [queue cancelAllOperations];
     self.token = nil;
-    self.credentials = nil;
+    self.user = nil;
     [self writeTokenToStorage];
+    [SBRequestOperation setDomainString:nil];
 }
 
-- (NSString *)userLogin
+- (NSString *)companyLogin
 {
-    return self.credentials.userLogin;
+    return self.user.credentials.companyLogin;
 }
 
 - (void)writeTokenToStorage
 {
     [[NSUserDefaults standardUserDefaults] setObject:self.token forKey:SBSessionStorageKeyForCompanyLogin(self.companyLogin)];
     [[NSUserDefaults standardUserDefaults] synchronize];
-}
-
-- (void)assignSessionCredentials:(SBSessionCredentials *)credentials
-{
-    NSAssert(credentials != nil, @"can't assign nil credentials");
-    self.credentials = credentials;
-    _settings = [[SBSettings alloc] initWithCompanyLogin:credentials.companyLogin userLogin:credentials.userLogin];
 }
 
 - (void)cancelRequestWithID:(NSString *)requestID
@@ -153,8 +145,8 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
             }
         }
         SBGetUserTokenRequest *authRequest = [[SBGetUserTokenRequest alloc] initWithComanyLogin:self.companyLogin];
-        authRequest.login = self.credentials.userLogin;
-        authRequest.password = self.credentials.password;
+        authRequest.login = self.user.credentials.userLogin;
+        authRequest.password = self.user.credentials.password;
         authRequest.callback = ^(SBResponse *authResponse) {
             if (!authResponse.error) {
                 self.token = authResponse.result;
@@ -300,6 +292,16 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     return request;
 }
 
+- (SBRequest *)getClientWithId:(NSString *)clientID callback:(SBRequestCallback)callback
+{
+    NSParameterAssert(clientID != nil && ![clientID isEqualToString:@""]);
+    SBGetClientRequest *request = [[SBGetClientRequest alloc] initWithToken:self.token comanyLogin:self.companyLogin];
+    request.clientID = clientID;
+    request.callback = callback;
+    request.delegate = self;
+    return request;
+}
+
 - (SBRequest *)addClientWithName:(NSString *)name phone:(NSString *)phone email:(NSString *)email callback:(SBRequestCallback)callback
 {
     NSParameterAssert(phone != nil && ![phone isEqualToString:@""]);
@@ -370,6 +372,24 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     request.delegate = self;
     request.callback = callback;
     return request;
+}
+
+- (SBRequest *)getGoogleCalendarBusyTimeFromDate:(NSDate *)fromDate toDate:(NSDate *)toDate unitID:(NSString *)unitID callback:(SBRequestCallback)callback
+{
+    NSParameterAssert(fromDate != nil);
+    NSParameterAssert(toDate != nil);
+    NSParameterAssert(unitID != nil && ![unitID isEqualToString:@""]);
+    SBGetGoogleCalendarBusyTimeRequest *request = [[SBGetGoogleCalendarBusyTimeRequest alloc] initWithToken:self.token comanyLogin:self.companyLogin];
+    request.startDate = fromDate;
+    request.endDate = toDate;
+    request.unitID = unitID;
+    request.callback = callback;
+    return request;
+}
+
+- (SBRequest *)getLocationsWithCallback:(SBRequestCallback)callback
+{
+    return [self buildRequest:[SBGetLocationsListRequest class] callback:callback];
 }
 
 #pragma mark - Statuses plugin

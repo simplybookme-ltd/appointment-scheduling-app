@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "SBSessionCredentials.h"
 #import "SBSession.h"
+#import "SBUser.h"
 
 extern NSString *const SBSessionManagerErrorDomain;
 extern NSString *const kSBSessionManagerDidEndSessionNotification;
@@ -16,7 +17,11 @@ extern NSString *const kSBSessionManagerDidEndSessionNotification;
 typedef NS_ENUM(NSInteger, SBSessionManagerErrorCodes)
 {
     SBNoTokenErrorCode,
-    SBWrongCredentialsErrorCode
+    SBWrongCredentialsErrorCode,
+    SBUserBlockedErrorCode,
+    SBWrongCompanyLoginErrorCode,
+    SBInvalidAPIKeyErrorCode,
+    SBHIPAAErrorCode
 };
 
 @class SBSessionManager;
@@ -28,6 +33,11 @@ typedef NS_ENUM(NSInteger, SBSessionManagerErrorCodes)
 - (void)sessionManager:(SBSessionManager *)manager willEndSession:(SBSession *)session;
 - (void)sessionManager:(SBSessionManager *)manager didEndSessionForCompany:(NSString *)companyLogin user:(NSString *)userLogin;
 
+@optional
+
+- (void)sessionManager:(SBSessionManager *)manager didRestoreSession:(SBSession *)session;
+- (void)sessionManager:(SBSessionManager *)manager didFailRestoreSessionWithError:(NSError *)error;
+
 @end
 
 @interface SBSessionManager : NSObject
@@ -37,6 +47,7 @@ typedef NS_ENUM(NSInteger, SBSessionManagerErrorCodes)
 - (SBSession *)defaultSession;
 - (void)setDefaultSession:(SBSession *)session;
 - (void)startSessionWithCredentials:(SBSessionCredentials *)sessionCredentials;
+- (void)restoreSessionWithCredentials:(SBSessionCredentials *)sessionCredentials;
 - (void)endSession:(SBSession *)session;
 - (void)addObserver:(NSObject<SBSessionManagerDelegateObserver> *)observer;
 - (void)removeObserver:(NSObject<SBSessionManagerDelegateObserver> *)observer;

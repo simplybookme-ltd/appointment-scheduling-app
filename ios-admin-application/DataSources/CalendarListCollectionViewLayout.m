@@ -28,7 +28,7 @@
         self.minColumnWidth = 120;
         self.minRowHeight = 85;
         self.headlineHeight = 0;
-        self.timeframeItemInsets = UIEdgeInsetsMake(-7, 0, 0, 5); // -7 for time label to center it vertically
+        self.timeframeItemInsets = UIEdgeInsetsMake(0, 0, 0, 5); // -7 for time label to center it vertically
         self.cellInsets = UIEdgeInsetsMake(2, 2, 2, 2);
         self.contentInsets = UIEdgeInsetsMake(10, 0, 10, 0);
     }
@@ -222,13 +222,13 @@
     return attributes;
 }
 
-- (CGRect)frameForTimeframeSupplementaryAtIndexPath:(nonnull NSIndexPath *)indexPath
-{
-    NSParameterAssert(indexPath != nil);
-    return CGRectMake(self.timeframeItemInsets.left,
-            indexPath.row * self.cellSize.height + self.headlineHeight + self.contentInsets.top + self.timeframeItemInsets.top,
-            self.timeframeWidth - self.timeframeItemInsets.left - self.timeframeItemInsets.right,
-            self.cellSize.height / 2. - self.timeframeItemInsets.top - self.timeframeItemInsets.bottom - 30);
-}
+//- (CGRect)frameForTimeframeSupplementaryAtIndexPath:(nonnull NSIndexPath *)indexPath
+//{
+//    NSParameterAssert(indexPath != nil);
+//    return CGRectMake(self.timeframeItemInsets.left,
+//            indexPath.row * self.cellSize.height + self.headlineHeight + self.contentInsets.top + self.timeframeItemInsets.top,
+//            self.timeframeWidth - self.timeframeItemInsets.left - self.timeframeItemInsets.right,
+//            /*self.cellSize.height / 2. - self.timeframeItemInsets.top - self.timeframeItemInsets.bottom - 30*/30);
+//}
 
 @end

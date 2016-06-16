@@ -13,6 +13,7 @@
 #import "SBGetBookingsFilter.h"
 #import "SBBookingForm.h"
 #import "SBSettings.h"
+#import "SBUser.h"
 
 extern NSString * const kSBPendingBookings_DidUpdateNotification;
 extern NSString * const kSBPendingBookings_BookingIDKey;
@@ -22,17 +23,13 @@ extern NSString * const kSBTimePeriodWeek;
 
 @interface SBSession : NSObject
 
-@property (nonatomic, readonly, copy) NSString *companyLogin;
-@property (nonatomic, readonly, copy) NSString *userLogin;
 @property (nonatomic, readonly, strong) SBSettings *settings;
+@property (nonatomic, readonly, strong) SBUser *user;
 
 + (instancetype)defaultSession;
-+ (instancetype)restoreSessionWithCompanyLogin:(NSString *)companyLogin;
 
-- (instancetype)initWithCompanyLogin:(NSString *)companyLogin token:(NSString *)token;
+- (instancetype)initWithUser:(SBUser *)user token:(NSString *)token domain:(NSString *)domain;
 - (void)invalidate;
-
-- (void)assignSessionCredentials:(SBSessionCredentials *)credentials;
 
 - (void)cancelRequestWithID:(NSString *)requestID;
 - (void)cancelRequests:(NSArray *)requests;
@@ -49,6 +46,7 @@ extern NSString * const kSBTimePeriodWeek;
 - (SBRequest *)getUnitList:(SBRequestCallback)callback;
 - (SBRequest *)getEventList:(SBRequestCallback)callback;
 - (SBRequest *)getClientListWithPattern:(NSString *)pattern callback:(SBRequestCallback)callback;
+- (SBRequest *)getClientWithId:(NSString *)clientID callback:(SBRequestCallback)callback;
 - (SBRequest *)addClientWithName:(NSString *)name phone:(NSString *)phone email:(NSString *)email callback:(SBRequestCallback)callback;
 - (SBRequest *)getAdditionalFieldsForEvent:(NSString *)eventID callback:(SBRequestCallback)callback;
 - (SBRequest *)book:(SBBookingForm *)formData callback:(SBRequestCallback)callback;
@@ -57,6 +55,8 @@ extern NSString * const kSBTimePeriodWeek;
 - (SBRequest *)deleteDeviceToken:(NSString *)deviceToken callback:(SBRequestCallback)callback;
 - (SBRequest *)isPluginActivated:(NSString *)pluginName callback:(SBRequestCallback)callback;
 - (SBRequest *)getCompanyParam:(NSString *)paramKey callback:(SBRequestCallback)callback;
+- (SBRequest *)getGoogleCalendarBusyTimeFromDate:(NSDate *)fromDate toDate:(NSDate *)toDate unitID:(NSString *)unitID callback:(SBRequestCallback)callback;
+- (SBRequest *)getLocationsWithCallback:(SBRequestCallback)callback;
 
 // statuses plugin
 - (SBRequest *)getStatusesList:(SBRequestCallback)callback;

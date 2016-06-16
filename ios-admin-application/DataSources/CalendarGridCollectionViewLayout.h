@@ -13,7 +13,6 @@
 #import "CalendarDataSource.h"
 #import "CalendarLayoutAttributes.h"
 
-extern NSString * _Nonnull const kHorizontalLineDecorationViewKind;
 extern NSComparator _Nonnull const CalendarGridBookingsLayoutSortingStrategy;
 
 @interface CalendarGridCollectionViewLayout : UICollectionViewLayout

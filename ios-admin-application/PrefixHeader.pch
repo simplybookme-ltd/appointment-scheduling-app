@@ -21,6 +21,8 @@
 
 #define UIApplicationDidReceiveRemoteNotification @"sb_UIApplicationDidReceiveRemoteNotification"
 
+#define kSBReachabilityHostname @"www.simplybook.me"
+
 #import <CoreGraphics/CoreGraphics.h>
 #import <CoreFoundation/CoreFoundation.h>
 

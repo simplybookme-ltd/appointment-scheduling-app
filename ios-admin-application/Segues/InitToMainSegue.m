@@ -16,6 +16,7 @@
 #import "PendingBookingsViewController.h"
 #import "DashboardViewController.h"
 #import "SettingsViewController.h"
+#import "AgendaViewController.h"
 
 @interface InitToMainSegue () <UIViewControllerTransitioningDelegate>
 
@@ -30,18 +31,22 @@
              @"unexpected navigation structure. %@ expected at tab place 0. %@ occurred.",
              NSStringFromClass([CalendarViewController class]), NSStringFromClass([[tabBarController.viewControllers[0] topViewController] class]));
     ((UIViewController *)tabBarController.viewControllers[0]).tabBarItem.selectedImage = [UIImage imageNamed:@"calendar-tab-active"];
-    NSAssert([[tabBarController.viewControllers[1] topViewController] isKindOfClass:[PendingBookingsViewController class]],
+    NSAssert([[tabBarController.viewControllers[1] topViewController] isKindOfClass:[AgendaViewController class]],
              @"unexpected navigation structure. %@ expected at tab place 1. %@ occurred.",
-             NSStringFromClass([PendingBookingsViewController class]), NSStringFromClass([[tabBarController.viewControllers[1] topViewController] class]));
-    ((UIViewController *)tabBarController.viewControllers[1]).tabBarItem.selectedImage = [UIImage imageNamed:@"pending-tab-active"];
-    NSAssert([[tabBarController.viewControllers[2] topViewController] isKindOfClass:[DashboardViewController class]],
+             NSStringFromClass([AgendaViewController class]), NSStringFromClass([[tabBarController.viewControllers[1] topViewController] class]));
+    ((UIViewController *)tabBarController.viewControllers[1]).tabBarItem.selectedImage = [UIImage imageNamed:@"agenda-tab-active"];
+    NSAssert([[tabBarController.viewControllers[2] topViewController] isKindOfClass:[PendingBookingsViewController class]],
              @"unexpected navigation structure. %@ expected at tab place 2. %@ occurred.",
-             NSStringFromClass([DashboardViewController class]), NSStringFromClass([[tabBarController.viewControllers[2] topViewController] class]));
-    ((UIViewController *)tabBarController.viewControllers[2]).tabBarItem.selectedImage = [UIImage imageNamed:@"dashboard-tab-active"];
-    NSAssert([[tabBarController.viewControllers[3] topViewController] isKindOfClass:[SettingsViewController class]],
+             NSStringFromClass([PendingBookingsViewController class]), NSStringFromClass([[tabBarController.viewControllers[2] topViewController] class]));
+    ((UIViewController *)tabBarController.viewControllers[2]).tabBarItem.selectedImage = [UIImage imageNamed:@"pending-tab-active"];
+    NSAssert([[tabBarController.viewControllers[3] topViewController] isKindOfClass:[DashboardViewController class]],
              @"unexpected navigation structure. %@ expected at tab place 3. %@ occurred.",
-             NSStringFromClass([SettingsViewController class]), NSStringFromClass([[tabBarController.viewControllers[3] topViewController] class]));
-    ((UIViewController *)tabBarController.viewControllers[3]).tabBarItem.selectedImage = [UIImage imageNamed:@"preferences-tab-active"];
+             NSStringFromClass([DashboardViewController class]), NSStringFromClass([[tabBarController.viewControllers[3] topViewController] class]));
+    ((UIViewController *)tabBarController.viewControllers[3]).tabBarItem.selectedImage = [UIImage imageNamed:@"dashboard-tab-active"];
+    NSAssert([[tabBarController.viewControllers[4] topViewController] isKindOfClass:[SettingsViewController class]],
+             @"unexpected navigation structure. %@ expected at tab place 4. %@ occurred.",
+             NSStringFromClass([SettingsViewController class]), NSStringFromClass([[tabBarController.viewControllers[4] topViewController] class]));
+    ((UIViewController *)tabBarController.viewControllers[4]).tabBarItem.selectedImage = [UIImage imageNamed:@"preferences-tab-active"];
     
     UIViewController *viewController = self.destinationViewController;
     viewController.transitioningDelegate = self;

@@ -8,9 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
+extern NSString * const kHorizontalLineDecorationViewKind;
+
 @interface CalendarCellDecorationView : UICollectionReusableView
 
 + (NSString *)kind;
 + (UIColor *)gridColor;
 
 @end
+
+NS_ASSUME_NONNULL_END

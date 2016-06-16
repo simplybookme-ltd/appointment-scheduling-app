@@ -45,6 +45,12 @@
                 break;
             case SBWrongCredentialsErrorCode:
                 return NSLS(@"Wrong credentials. Please check your login and password.",@"");
+            case SBUserBlockedErrorCode:
+                return NSLS(@"Account with this login was blocked.", @"");
+            case SBWrongCompanyLoginErrorCode:
+                return NSLS(@"Company with login not found.", @"");
+            case SBHIPAAErrorCode:
+                return NSLS(@"You cannot use this application because personal data protection enabled.", @"");
             default:
                 return NSLS(@"Unexpected error occurred. Please try again later.", @"");
                 break;
@@ -88,6 +94,12 @@
     } else {
         return [NSString stringWithFormat:@"%@. %@", self.domain, self.localizedDescription];
     }
+}
+
+- (BOOL)isNetworkConnectionError
+{
+    return [self.domain isEqualToString:NSURLErrorDomain]
+    && (self.code == NSURLErrorNetworkConnectionLost || self.code == NSURLErrorNotConnectedToInternet || self.code == NSURLErrorTimedOut);
 }
 
 @end

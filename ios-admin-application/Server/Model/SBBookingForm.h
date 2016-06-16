@@ -18,6 +18,7 @@
 @property (nonatomic, copy, readonly, nullable) NSString *eventID;
 @property (nonatomic, readonly) NSUInteger eventDuration;
 @property (nonatomic, copy, nullable) NSString *unitID;
+@property (nonatomic, copy, nullable) NSString *locationID;
 @property (nonatomic, copy, nullable) NSDictionary *client;
 @property (nonatomic, strong, nullable) NSArray <SBAdditionalField *> *additionalFields;
 @property (nonatomic, copy, nullable) NSDate *startDate;

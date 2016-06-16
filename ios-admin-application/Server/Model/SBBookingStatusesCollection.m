@@ -52,6 +52,11 @@
     return self.statuses.count;
 }
 
+- (NSArray<SBBookingStatus *> *)allObjects
+{
+    return self.statuses;
+}
+
 - (NSAttributedString *)attributedTitleForStatus:(SBBookingStatus *)status
 {
     NSString *string = [NSString stringWithFormat:@"• %@", status.name];
@@ -137,8 +142,8 @@
     self = [super init];
     if (self) {
         self.statusID = dict[@"id"];
-        self.name = dict[@"name"];
-        self.HEXColor = dict[@"color"];
+        self.name = (dict[@"name"] && ![dict[@"name"] isEqual:[NSNull null]] ? dict[@"name"] : @"");
+        self.HEXColor = (dict[@"color"] && ![dict[@"color"] isEqual:[NSNull null]] ? dict[@"color"] : @"");
         self.isDefault = ([dict[@"is_default"] isEqual:[NSNull null]]) ? NO : [dict[@"is_default"] boolValue];
     }
     return self;

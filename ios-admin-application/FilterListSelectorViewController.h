@@ -16,9 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FilterListSelectorItemProtocol <SBCollectionEntryProtocol, SBCollectionSortingProtocol>
 
 @property (nonatomic, strong, readonly) NSString *itemID;
-@property (nonatomic, strong, readonly) NSString *title;
+@property (nonatomic, strong, readonly, nullable) NSString *title;
 @property (nonatomic, strong, readonly) NSString *subtitle;
-//@property (nonatomic, strong, readonly) UIColor *color;
+@property (nonatomic, strong, readonly, nullable) UIColor *colorObject;
 
 @end
 

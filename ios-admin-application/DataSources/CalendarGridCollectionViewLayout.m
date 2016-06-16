@@ -14,7 +14,6 @@
 #import "CalendarSectionDataSource.h"
 
 NSString *_Nonnull const kVerticalLineDecorationViewKind = @"kVerticalLineDecorationViewKind";
-NSString *_Nonnull const kHorizontalLineDecorationViewKind = @"kHorizontalLineDecorationViewKind";
 NSString *_Nonnull const kHeadlineBackgroundDecorationViewKind = @"kHeadlineBackgroundDecorationViewKind";
 NSString *_Nonnull const kTimeframeBackgroundDecorationViewKind = @"kTimeframeBackgroundDecorationViewKind";
 NSString *_Nonnull const kTimeFrameHorizontalLineDecorationViewKind = @"kTimeFrameHorizontalLineDecorationViewKind";
@@ -43,6 +42,7 @@ const NSUInteger kItemZIndex = 550;
 
 @property (nonatomic, strong, nonnull) NSArray <NSArray <CalendarLayoutAttributes *> *> *layoutAttributesForItems;
 @property (nonatomic, strong, nonnull) NSArray <NSArray <CalendarLayoutAttributes *> *> *layoutAttributesForWorkHoursBreaks;
+@property (nonatomic, strong, nonnull) NSArray <NSArray <CalendarLayoutAttributes *> *> *layoutAttributesForGoogleBusyItems;
 @property (nonatomic, strong, nonnull) NSArray <CalendarLayoutAttributes *> *layoutAttributesForTimeFrameSupplementaryElements;
 @property (nonatomic, strong, nonnull) NSMutableArray <NSNumber *> *columns;
 @property (nonatomic) CGFloat columnWidth;
@@ -63,12 +63,13 @@ const NSUInteger kItemZIndex = 550;
         self.minColumnWidth = 150;
         self.minRowHeight = 85;
         self.headlineHeight = 33;
-        self.timeframeItemInsets = UIEdgeInsetsMake(-7, 0, 0, 5); // -7 for time label to center it vertically
+        self.timeframeItemInsets = UIEdgeInsetsMake(0, 0, 0, 5);
         self.cellInsets = UIEdgeInsetsMake(1, 2, 2, 0);
         self.contentInsets = UIEdgeInsetsMake(0, 0, 10, 0);
         self.columns = [NSMutableArray array];
         self.layoutAttributesForItems = [NSMutableArray array];
         self.layoutAttributesForWorkHoursBreaks = [NSMutableArray array];
+        self.layoutAttributesForGoogleBusyItems = [NSMutableArray array];
         minuteHeight = -1;
         self.timelineTimer = [NSTimer timerWithTimeInterval:60
                                                      target:self selector:@selector(timerHandler:)
@@ -147,6 +148,10 @@ const NSUInteger kItemZIndex = 550;
         }
         section++;
     }
+    NSAssert(section < self.layoutAttributesForWorkHoursBreaks.count, @"");
+    if (section >= self.layoutAttributesForWorkHoursBreaks.count) {
+        return nil;
+    }
     NSArray *breaks = self.layoutAttributesForWorkHoursBreaks[section];
     for (UICollectionViewLayoutAttributes *layoutAttributes in breaks) {
         if (CGRectContainsPoint(layoutAttributes.frame, position)) {
@@ -190,7 +195,7 @@ const NSUInteger kItemZIndex = 550;
     NSMutableDictionary <NSNumber *, NSMutableArray *> *rows = [NSMutableDictionary dictionary];
     NSMutableDictionary <NSNumber *, NSMutableArray *> *adjustments = [NSMutableDictionary dictionary];
 
-    NSInteger sections = [self.dataSource numberOfSectionsInCollectionView:self.collectionView];
+    NSInteger sections = self.collectionView.numberOfSections;
     for (NSUInteger sectionIndex = 0; sectionIndex < sections; sectionIndex++) {
         [rows removeAllObjects];
         [adjustments removeAllObjects];
@@ -325,6 +330,18 @@ const NSUInteger kItemZIndex = 550;
     return attributesList;
 }
 
+- (NSArray <CalendarLayoutAttributes *> *)calculateLayoutAttributesForGoogleBusyItemsInSection:(NSUInteger)section
+{
+    NSMutableArray <CalendarLayoutAttributes *> *attributesList = [NSMutableArray array];
+    for (NSInteger item = 0; item < self.dataSource.googleCalendarBusyTime[self.dataSource.sections[section].sectionID].count; item++) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:item inSection:section];
+        CalendarLayoutAttributes *itemAttributes = [self layoutAttributesForSupplementaryViewOfKind:kCalendarDataSourceGoogleBusyTimeElementKind
+                                                                                        atIndexPath:indexPath];
+        [attributesList addObject:itemAttributes];
+    }
+    return attributesList;
+}
+
 - (nonnull NSArray <CalendarLayoutAttributes *> *)calculateLayoutAttributesForTimeFrameSupplementaryElements
 {
     NSMutableArray <CalendarLayoutAttributes *> *attributes = [NSMutableArray array];
@@ -368,7 +385,7 @@ const NSUInteger kItemZIndex = 550;
     }
     self.minRowHeight = self.dataSource.timeframeStep ? (60. / self.dataSource.timeframeStep) * self.timeframeStepHeight : 0;
 
-    NSInteger sections = [self.dataSource numberOfSectionsInCollectionView:self.collectionView];
+    NSInteger sections = self.collectionView.numberOfSections;
     self.columnWidth = 0;
     if (sections > 0) {
         self.columnWidth = MAX((self.collectionView.frame.size.width - self.timeframeWidth) / sections, self.minColumnWidth);
@@ -396,6 +413,12 @@ const NSUInteger kItemZIndex = 550;
     }
     self.layoutAttributesForWorkHoursBreaks = layoutAttributesForWorkHoursBreaks;
     self.layoutAttributesForTimeFrameSupplementaryElements = [self calculateLayoutAttributesForTimeFrameSupplementaryElements];
+    
+    NSMutableArray *layoutAttributesForGoogleBusyItems = [NSMutableArray array];
+    for (NSUInteger section = 0; section < sections; section++) {
+        [layoutAttributesForGoogleBusyItems addObject:[self calculateLayoutAttributesForGoogleBusyItemsInSection:section]];
+    }
+    self.layoutAttributesForGoogleBusyItems = layoutAttributesForGoogleBusyItems;
 }
 
 + (Class)layoutAttributesClass
@@ -407,7 +430,7 @@ const NSUInteger kItemZIndex = 550;
 {
     NSMutableArray *attributes = [NSMutableArray array];
     
-    NSInteger sections = [self.dataSource numberOfSectionsInCollectionView:self.collectionView];
+    NSInteger sections = self.collectionView.numberOfSections;
     
     if (sections > 0 && self.workingHoursMatrix.hours.count) {
         UICollectionViewLayoutAttributes *headerBackgroundDecoration = [self layoutAttributesForDecorationViewOfKind:kHeadlineBackgroundDecorationViewKind
@@ -440,6 +463,10 @@ const NSUInteger kItemZIndex = 550;
         if (self.layoutAttributesForWorkHoursBreaks.count > section) {
             [attributes addObjectsFromArray:self.layoutAttributesForWorkHoursBreaks[section]];
         }
+        
+        if (self.layoutAttributesForGoogleBusyItems.count > section) {
+            [attributes addObjectsFromArray:self.layoutAttributesForGoogleBusyItems[section]];
+        }
 
         if (section == 0) {
             for (NSInteger row = 0; row < self.workingHoursMatrix.hours.count; row++) {
@@ -462,7 +489,6 @@ const NSUInteger kItemZIndex = 550;
             }
         }
 
-//        [attributes addObjectsFromArray:self.layoutAttributesForTimeFrameSupplementaryElements];
         [self.layoutAttributesForTimeFrameSupplementaryElements enumerateObjectsUsingBlock:^(CalendarLayoutAttributes *obj, NSUInteger idx, BOOL *stop) {
             obj.frame = [self frameForTimeframeSupplementaryAtIndexPath:obj.indexPath];
             [attributes addObject:[self correctAttributesGeometry:obj]];
@@ -527,12 +553,13 @@ const NSUInteger kItemZIndex = 550;
     else if ([elementKind isEqualToString:kHeadlineBackgroundDecorationViewKind]) {
         attributes.backgroundColor = [UIColor whiteColor];
         attributes.frame = CGRectMake(0, 0, self.contentSize.width, self.headlineHeight);
-        attributes.zIndex = kHeadlineBackgroundDecorationViewZIndex;
+        attributes.zIndex = kHeadlineBackgroundDecorationViewZIndex + 2;
         attributes.stickyX = YES;
         attributes.stickyY = YES;
         if (indexPath.section == -1 && indexPath.row == -1) { // top left corner marker
             attributes.frame = CGRectMake(0, 0, self.timeframeWidth, self.headlineHeight);
             attributes.zIndex = 2000;
+//            attributes.zIndex = kTimeFrameBackgroundDecorationViewZIndex;
         }
     }
     else if ([elementKind isEqualToString:kVerticalLineDecorationViewKind]) {
@@ -617,7 +644,10 @@ const NSUInteger kItemZIndex = 550;
         attributes.frame = [self frameForTimeframeSupplementaryAtIndexPath:indexPath];
         attributes.stickyY = NO;
         attributes.stickyX = YES;
-        attributes.zIndex = kTimeFrameBackgroundDecorationViewZIndex + 1;
+        attributes.zIndex = 2001;
+    }
+    else if ([elementKind isEqualToString:kCalendarDataSourceGoogleBusyTimeElementKind]) {
+        attributes.frame = [self frameForGoogleItemSupplementaryAtIndexPath:indexPath];
     }
     return [self correctAttributesGeometry:attributes];
 }
@@ -694,9 +724,25 @@ const NSUInteger kItemZIndex = 550;
 {
     NSParameterAssert(indexPath != nil);
     return CGRectMake(self.timeframeItemInsets.left,
-                      indexPath.row * self.cellSize.height + self.cellSize.height / 2. + self.headlineHeight + self.contentInsets.top + self.timeframeItemInsets.top,
+                      indexPath.row * self.cellSize.height - self.cellSize.height / 2. + self.headlineHeight + self.contentInsets.top + self.timeframeItemInsets.top,
                       self.timeframeWidth - self.timeframeItemInsets.left - self.timeframeItemInsets.right,
-                      self.cellSize.height / 2. - self.timeframeItemInsets.top - self.timeframeItemInsets.bottom - 30);
+                      self.cellSize.height - 1);
+}
+
+- (CGRect)frameForGoogleItemSupplementaryAtIndexPath:(nonnull NSIndexPath *)indexPath
+{
+    NSParameterAssert(indexPath != nil);
+    if (indexPath.section >= self.dataSource.sections.count
+        || indexPath.item >= self.dataSource.googleCalendarBusyTime[self.dataSource.sections[indexPath.section].sectionID].count) {
+        return CGRectZero;
+    }
+    NSObject *sectionID = self.dataSource.sections[indexPath.section].sectionID;
+    NSDictionary <NSString *, NSDate *> *data = self.dataSource.googleCalendarBusyTime[sectionID][indexPath.item];
+    NSTimeInterval startOffset = [self startOffsetForDate:data[@"from"]];
+    NSTimeInterval duration = (data[@"to"].timeIntervalSince1970 - data[@"from"].timeIntervalSince1970) / 60.;
+    NSNumber *value = self.columns[indexPath.section];
+    return CGRectMake(value.floatValue + self.timeframeWidth + 2, self.headlineHeight + startOffset * self.minuteHeight,
+                      self.columnWidth - 4, duration * self.minuteHeight);
 }
 
 - (CGRect)frameForColumnLine:(nonnull NSIndexPath *)indexPath
@@ -721,7 +767,7 @@ const NSUInteger kItemZIndex = 550;
 - (CGRect)frameForRowTimeFrameLine:(nonnull NSIndexPath *)indexPath
 {
     NSParameterAssert(indexPath != nil);
-    return CGRectMake(0,
+    return CGRectMake(self.timeframeWidth,
             indexPath.row * self.cellSize.height + self.headlineHeight + self.contentInsets.top,
             self.timeframeWidth,
             1);

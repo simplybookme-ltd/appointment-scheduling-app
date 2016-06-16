@@ -7,11 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "CalendarBookingsViewController.h"
 #import "CalendarViewController.h"
 
 @class SBGetBookingsFilter;
 
-@interface CalendarDayViewController : UIViewController <CalendarViewContainerChildController>
+@interface CalendarDayViewController : CalendarBookingsViewController <CalendarViewContainerChildController>
 
 @property (nonatomic, strong) SBGetBookingsFilter *filter;
 

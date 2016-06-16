@@ -42,6 +42,11 @@
         self.timeFrameStep = 60;
     }
     NSDate *hour = [self.workingHoursMatrix startTimeForRecordWithID:self.recordID];
+    NSAssert(hour != nil, @"unexpected start time");
+    if (hour == nil) {
+        self.hours = @[];
+        return;
+    }
     NSDateComponents *components = [NSDateComponents new];
     components.minute = self.timeFrameStep;
     NSCalendar *calendar = [NSDate sb_calendar];

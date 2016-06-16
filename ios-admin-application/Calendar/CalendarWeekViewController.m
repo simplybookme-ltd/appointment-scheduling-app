@@ -24,6 +24,9 @@
 #import "SBNewBookingPlaceholder.h"
 #import "UITraitCollection+SimplyBookLayout.h"
 #import "SBPluginsRepository.h"
+#import "SBPerformer.h"
+#import "SBGetBookingsRequest.h"
+#import "SBReachability.h"
 
 @interface CalendarWeekViewController () <UIGestureRecognizerDelegate>
 {
@@ -37,6 +40,7 @@
 @property (nonatomic, weak, nullable) IBOutlet UILabel *datesIntervalLabel;
 @property (nonatomic, weak, nullable) IBOutlet UIButton *prevWeekButton;
 @property (nonatomic, weak, nullable) IBOutlet UIView *topToolBar;
+@property (nonatomic, weak) IBOutlet UILabel *noCollectionLabel;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 @property (nonatomic, strong, nonnull) NSDateIntervalFormatter *dateIntervalFormatter;
 @property (nonatomic, getter=isLoading) BOOL loading;
@@ -50,6 +54,12 @@
     // Do any additional setup after loading the view.
     self.filter = [SBGetBookingsFilter todayBookingsFilter];
     self.filter.order = kSBGetBookingsFilterOrderByStartDate;
+    SBUser *user = [SBSession defaultSession].user;
+    NSAssert(user != nil, @"no user found");
+    if (![user hasAccessToACLRule:SBACLRulePerformersFullListAccess]) {
+        NSAssert(user.associatedPerformerID != nil && ![user.associatedPerformerID isEqualToString:@""], @"invalid associated performer value");
+        self.filter.unitGroupID = user.associatedPerformerID;
+    }
     [self configureFilter:self.filter withWeekRangeForDate:[NSDate date]];
     
     pendingRequests = [NSMutableArray array];
@@ -75,21 +85,47 @@
     self.prevWeekButton.transform = CGAffineTransformRotate(self.prevWeekButton.transform, M_PI);
 }
 
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didInvalidateCacheNotificationHandler:)
+                                                 name:kSBCache_DidInvalidateCacheForRequestNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didInvalidateCacheNotificationHandler:)
+                                                 name:kSBCache_DidInvalidateCacheNotification object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSBCache_DidInvalidateCacheForRequestNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kSBCache_DidInvalidateCacheNotification object:nil];
+}
+
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    SBRequest *checkPluginRequest = [[SBSession defaultSession] isPluginActivated:kSBPluginRepositoryApproveBookingPlugin callback:^(SBResponse<NSNumber *> * _Nonnull response) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryApproveBookingPlugin enabled:[response.result boolValue]];
-            self.activityIndicator.hidden = YES;
-            self.filter = [SBGetBookingsFilter todayBookingsFilter];
-            self.filter.order = kSBGetBookingsFilterOrderByStartDate;
-            [self configureFilter:self.filter withWeekRangeForDate:[NSDate date]];
-            [self loadData];
+    
+    SBReachability *reach = [SBReachability reachabilityWithHostname:kSBReachabilityHostname];
+    reach.reachabilityBlock = ^(SBReachability *reachability, SCNetworkConnectionFlags flags) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            if (flags & kSCNetworkFlagsReachable) {
+                self.noCollectionLabel.hidden = YES;
+                SBRequest *checkPluginRequest = [[SBSession defaultSession] isPluginActivated:kSBPluginRepositoryApproveBookingPlugin callback:^(SBResponse<NSNumber *> * _Nonnull response) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryApproveBookingPlugin enabled:[response.result boolValue]];
+                        [self.activityIndicator stopAnimating];
+                        [self configureFilter:self.filter withWeekRangeForDate:[NSDate date]];
+                        [self loadData];
+                    });
+                }];
+                [self.activityIndicator startAnimating];
+                [[SBSession defaultSession] performReqeust:checkPluginRequest];
+            } else {
+                self.noCollectionLabel.hidden = NO;
+            }
         });
-    }];
-    self.activityIndicator.hidden = NO;
-    [[SBSession defaultSession] performReqeust:checkPluginRequest];
+    };
+    [reach startNotifier];
 }
 
 - (void)loadData
@@ -150,6 +186,22 @@
     }];
     [group addRequest:loadStatusesRequest];
 
+    __block SBPerformersCollection *performers = nil;
+    SBRequest *loadPerformersRequest = [session getUnitList:^(SBResponse<SBPerformersCollection *> *response) {
+        SBUser *user = [SBSession defaultSession].user;
+        NSAssert(user != nil, @"no user found");
+        if ([user hasAccessToACLRule:SBACLRulePerformersFullListAccess]) {
+            performers = response.result;
+        } else {
+            NSAssert(user.associatedPerformerID != nil && ![user.associatedPerformerID isEqualToString:@""], @"invalid associated performer value");
+            performers = [response.result collectionWithObjectsPassingTest:^BOOL(SBPerformer * _Nonnull object, NSUInteger idx, BOOL * _Nonnull stop) {
+                *stop = [object.performerID isEqualToString:user.associatedPerformerID];
+                return *stop;
+            }];
+        }
+    }];
+    [group addRequest:loadPerformersRequest];
+
     __block NSArray <SBBooking *> *bookings = nil;
     SBRequest *loadBookingsRequest = [[SBSession defaultSession] getBookingsWithFilter:self.filter callback:^(SBResponse *response) {
         bookings = response.result;
@@ -162,22 +214,27 @@
     group.callback = ^(SBResponse *response) {
         [pendingRequests removeObject:response.requestGUID];
         dispatch_async(dispatch_get_main_queue(), ^{
-            self.activityIndicator.hidden = YES;
+            [self.activityIndicator stopAnimating];
             if (response.error) {
-                if (!response.canceled) {
+                if (!response.canceled && !response.error.isNetworkConnectionError) {
                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
                                                                     message:[response.error message]
                                                                    delegate:nil cancelButtonTitle:NSLS(@"OK",@"")
                                                           otherButtonTitles:nil];
                     [alert show];
+                } else {
+                    self.noCollectionLabel.hidden = NO;
                 }
             } else {
+                [self processBookings:bookings];
+                [self processPerformers:performers];
                 self.loading = NO;
                 [self.calendarDataSource setTimeframeStep:timeframeStep];
                 SBWorkingHoursMatrix *workingHoursMatrix = [[SBWorkingHoursMatrix alloc] initWithData:workingHours];
                 [workingHoursMatrix updateDatesUsingBookingsInfo:bookings];
                 [self.calendarGridLayout setWorkingHoursMatrix:workingHoursMatrix];
                 [self.calendarDataSource setWorkingHoursMatrix:workingHoursMatrix];
+                [self.calendarDataSource setPerformers:performers];
                 [self.calendarDataSource setSections:sections];
                 [self.calendarDataSource setStatusesCollection:statuses];
                 [self.calendarDataSource setBookings:bookings sortingStrategy:CalendarGridBookingsLayoutSortingStrategy];
@@ -187,7 +244,7 @@
             }
         });
     };
-    self.activityIndicator.hidden = NO;
+    [self.activityIndicator startAnimating];
     [pendingRequests addObject:group.GUID];
     self.loading = YES;
     [session performReqeust:group];
@@ -271,6 +328,7 @@
             return ;
         }
         dispatch_async(dispatch_get_main_queue(), ^{
+            [self processBookings:response.result];
             [self.refreshControl endRefreshing];
             [self.calendarDataSource setBookings:response.result sortingStrategy:CalendarGridBookingsLayoutSortingStrategy];
             [self.collectionView reloadData];
@@ -303,6 +361,18 @@
         placeholder.startDate = startDate;
         placeholder.endDate = endHour;
         [self.calendarDataSource addNewBookingPlaceholder:placeholder forSection:indexPath.section];
+    }
+}
+
+#pragma mark - Notification handlers
+
+- (void)didInvalidateCacheNotificationHandler:(NSNotification *)notification
+{
+    if ((notification.userInfo[kSBCache_RequestObjectUserInfoKey] && [notification.userInfo[kSBCache_RequestObjectUserInfoKey] isKindOfClass:[SBGetBookingsRequest class]])
+        || (notification.userInfo[kSBCache_RequestClassUserInfoKey] && [notification.userInfo[kSBCache_RequestClassUserInfoKey] isSubclassOfClass:[SBGetBookingsRequest class]])) {
+        [self refreshAction:nil];
+    } else if ([notification.name isEqualToString:kSBCache_DidInvalidateCacheNotification]) {
+        [self loadData];
     }
 }
 

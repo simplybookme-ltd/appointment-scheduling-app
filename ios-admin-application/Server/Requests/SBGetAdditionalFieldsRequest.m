@@ -50,7 +50,7 @@
         [list addObject:[[SBAdditionalField alloc] initWithDict:dict]];
     }
     self.result = [list sortedArrayUsingComparator:^NSComparisonResult(SBAdditionalField *obj1, SBAdditionalField *obj2) {
-        return (obj1.position < obj2.position) ? NSOrderedAscending : (obj1.position > obj2.position ? NSOrderedDescending : NSOrderedSame);
+        return (obj1.position.integerValue < obj2.position.integerValue) ? NSOrderedAscending : (obj1.position.integerValue > obj2.position.integerValue ? NSOrderedDescending : NSOrderedSame);
     }];
     return [super process:self.result];
 }

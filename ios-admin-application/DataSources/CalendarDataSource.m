@@ -16,8 +16,12 @@
 #import "SBWorkingHoursMatrix.h"
 #import "CalendarSectionDataSource.h"
 #import "SBBookingStatusesCollection.h"
+#import "SBPerformer.h"
+#import "SBCollection.h"
 
 NSString * const _Nonnull kCalendarDataSourceTimeframeElementKind = @"kCalendarDataSourceTimeframeElementKind";
+NSString * const _Nonnull kCalendarDataSourceGoogleBusyTimeElementKind = @"kCalendarDataSourceGoogleBusyTimeElementKind";
+
 NSString * const _Nonnull kCalendarGridSectionHeaderReuseIdentifier = @"kCalendarGridSectionHeaderReuseIdentifier";
 NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalendarListSectionHeaderReuseIdentifier";
 
@@ -28,10 +32,20 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
 @property (nonatomic, readwrite) NSCalendar *calendar;
 @property (nonatomic, weak) UICollectionView *collectionView;
 @property (nonatomic, strong, readwrite, nullable) SBBookingStatusesCollection *statuses;
+@property (nonatomic, strong, readwrite) NSMutableDictionary <NSObject *, NSArray<NSDictionary *> *> * _googleCalendarBusyTime;
 
 @end
 
 @implementation CalendarDataSource
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self._googleCalendarBusyTime = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
 
 - (nonnull NSDateFormatter *)timeFrameFormatter
 {
@@ -65,7 +79,20 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
     return _calendar;
 }
 
+- (NSDictionary<NSObject *,NSArray<NSDictionary *> *> *)googleCalendarBusyTime
+{
+    return self._googleCalendarBusyTime;
+}
+
 #pragma mark -
+
+- (void)setGoogleCalendarBusyTime:(NSArray<NSDictionary *> * _Nonnull)googleCalendarBusyTime forSectionID:(NSObject<NSCopying> *)sectionID
+{
+    NSParameterAssert(googleCalendarBusyTime != nil);
+    if (googleCalendarBusyTime) {
+        self._googleCalendarBusyTime[sectionID] = googleCalendarBusyTime;
+    }
+}
 
 - (void)setWorkingHoursMatrix:(nonnull SBWorkingHoursMatrix *)workingHoursMatrix
 {
@@ -105,6 +132,9 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
     [self.collectionView registerNib:[UINib nibWithNibName:@"TextCollectionReusableView" bundle:nil]
           forSupplementaryViewOfKind:kCalendarDataSourceTimeframeElementKind
                  withReuseIdentifier:kCalendarDataSourceTimeframeElementKind];
+    [self.collectionView registerNib:[UINib nibWithNibName:@"TextCollectionReusableView" bundle:nil]
+          forSupplementaryViewOfKind:kCalendarDataSourceGoogleBusyTimeElementKind
+                 withReuseIdentifier:kCalendarDataSourceGoogleBusyTimeElementKind];
 }
 
 - (nullable NSObject<SBBookingProtocol> *)bookingAtIndexPath:(nonnull NSIndexPath *)indexPath
@@ -168,6 +198,9 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
         SBBooking *booking = (SBBooking *)obj;
         BookingCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
         UIColor *bgColor = [UIColor sb_defaultBookingColor];
+        if (self.performers[booking.performerID].color) {
+            bgColor = [UIColor colorFromHEXString:self.performers[booking.performerID].color];
+        }
         if (booking.statusID) {
             SBBookingStatus *status = self.statuses[booking.statusID];
             if (status) {
@@ -230,6 +263,17 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
         supplementaryView.textLabel.textColor = [UIColor lightGrayColor];
         supplementaryView.textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
         supplementaryView.textLabel.textAlignment = NSTextAlignmentRight;
+        return supplementaryView;
+    }
+    else if ([kind isEqualToString:kCalendarDataSourceGoogleBusyTimeElementKind]) {
+        TextCollectionReusableView *supplementaryView = [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                                                                           withReuseIdentifier:kind
+                                                                                                  forIndexPath:indexPath];
+        supplementaryView.backgroundColor = [UIColor sb_defaultBookingColor];
+        supplementaryView.textLabel.text = NSLS(@"Google calendar event",@"");
+        supplementaryView.textLabel.textColor = [UIColor lightGrayColor];
+        supplementaryView.textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+        supplementaryView.textLabel.textAlignment = NSTextAlignmentLeft;
         return supplementaryView;
     }
     return nil;

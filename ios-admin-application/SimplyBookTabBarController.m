@@ -10,6 +10,15 @@
 #import "SBSessionManager.h"
 #import "SBSession.h"
 #import "PendingBookingsViewController.h"
+#import "SBUser.h"
+
+NS_ENUM(NSInteger, _Tabs) {
+    Calendar,
+    Upcomming,
+    Pending,
+    Dashboard,
+    Settings
+};
 
 @interface SimplyBookTabBarController () <SBSessionManagerDelegateObserver>
 {
@@ -27,10 +36,23 @@
     [[SBSessionManager sharedManager] addObserver:self];
     
     if ([SBSession defaultSession]) {
-        [self getPendingBookingsCount];
-        [self startUpdateTimer];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pendingBookingsDidUpdateNotificationHandler:)
-                                                     name:kSBPendingBookings_DidUpdateNotification object:nil];
+        SBUser *user = [SBSession defaultSession].user;
+        NSAssert(user != nil, @"no user found");
+        if (![user hasAccessToACLRule:SBACLRuleDashboardAccess]) { // warning: check dashboard access before pending bookings access
+            NSMutableArray *controllers = [NSMutableArray arrayWithArray:self.viewControllers];
+            [controllers removeObjectAtIndex:Dashboard];
+            self.viewControllers = controllers;
+        }
+        if (![user hasAccessToACLRule:SBACLRulePendingBookingsAccess]) {
+            NSMutableArray *controllers = [NSMutableArray arrayWithArray:self.viewControllers];
+            [controllers removeObjectAtIndex:Pending];
+            self.viewControllers = controllers;
+        } else {
+            [self getPendingBookingsCount];
+            [self startUpdateTimer];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(pendingBookingsDidUpdateNotificationHandler:)
+                                                         name:kSBPendingBookings_DidUpdateNotification object:nil];
+        }
     }
 }
 
@@ -56,7 +78,7 @@
     getPendingBookingsCountRequest = [session getPendingBookingsCountWithCallback:^(SBResponse<NSNumber *> * _Nonnull response) {
         if (!response.error) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSAssert([[self.viewControllers[1] topViewController] isKindOfClass:[PendingBookingsViewController class]],
+                NSAssert([[self.viewControllers[2] topViewController] isKindOfClass:[PendingBookingsViewController class]],
                          @"unexpected navigation structure. %@ expected at tab place 1. %@ occurred.",
                          NSStringFromClass([PendingBookingsViewController class]), NSStringFromClass([[self.viewControllers[1] topViewController] class]));
                 if (pendingBookingsCount != response.result.unsignedIntegerValue) {
@@ -134,7 +156,9 @@
 - (void)sessionManager:(SBSessionManager *)manager didEndSessionForCompany:(NSString *)companyLogin user:(NSString *)userLogin
 {
     [[SBSessionManager sharedManager] removeObserver:self];
-    [self performSegueWithIdentifier:@"mainToLoginSegue" sender:self];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self performSegueWithIdentifier:@"mainToLoginSegue" sender:self];
+    });
 }
 
 - (void)sessionManager:(SBSessionManager *)manager didFailStartSessionWithError:(NSError *)error

@@ -15,8 +15,9 @@ NSString *const SBRequestErrorDomain = @"SBRequestErrorDomain";
 NSString *const SBServerErrorDomain = @"SBServerErrorDomain";
 NSString *const SBServerMessageKey = @"SBServerMessageKey";
 
-static NSString *const kSBDefaultEndpoint = @"https://user-api.simplybook.me/admin";
-static NSString *const kSBLoginEndpoint = @"https://user-api.simplybook.me/login";
+static NSString *const kSBDefaultEndpoint = @"admin";
+static NSString *const kSBLoginEndpoint = @"login";
+
 
 @interface SBRequestOperation () <SBRequestDelegate>
 {
@@ -38,6 +39,30 @@ static NSString *const kSBLoginEndpoint = @"https://user-api.simplybook.me/login
 @synthesize delegate;
 @synthesize callback;
 @synthesize cachePolicy = _cachePolicy;
+
+/**
+ * TODO: get rid of global configuration variables. as possible solution: replace it with configuration 
+ * of dispatcher.
+ *
+ * @see +[SBRequestOperation URLStringForEndpoint:]
+ * @see +[SBRequestOperation setDomainString:]
+ */
+static NSString *SBRequestOperation_defaultDomainString = @"user-api.simplybook.me";
+static NSString *SBRequestOperation_domainString = @"user-api.simplybook.me";
+
++ (NSString *)URLStringForEndpoint:(NSString *)endpoint
+{
+    return [NSString stringWithFormat:@"https://%@/%@", SBRequestOperation_domainString, endpoint];
+}
+
++ (void)setDomainString:(NSString *)domainString
+{
+    if (domainString) {
+        SBRequestOperation_domainString = [domainString copy];
+    } else {
+        SBRequestOperation_domainString = [SBRequestOperation_defaultDomainString copy];
+    }
+}
 
 - (instancetype)init
 {
@@ -98,7 +123,7 @@ static NSString *const kSBLoginEndpoint = @"https://user-api.simplybook.me/login
 
 - (NSURL *)endPointURL
 {
-    return [NSURL URLWithString:_endPointString];
+    return [NSURL URLWithString:[[self class] URLStringForEndpoint:_endPointString]];
 }
 
 - (NSDictionary *)headers

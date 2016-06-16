@@ -56,10 +56,21 @@
                 [self.activityIndicator stopAnimating];
                 self.collectionView.hidden = YES;
                 self.pluginNotAvailableView.hidden = NO;
-                self.bookings = nil;
+                @synchronized (self) {
+                    self.bookings = nil;
+                }
             }
             else {
-                [self loadPendingBookings];
+                if (response.result.boolValue) {
+                    [self loadPendingBookings];
+                } else {
+                    [self.activityIndicator stopAnimating];
+                    self.collectionView.hidden = YES;
+                    self.pluginNotAvailableView.hidden = NO;
+                    @synchronized (self) {
+                        self.bookings = nil;
+                    }
+                }
             }
         });
     }];
@@ -116,16 +127,23 @@
 
 - (void)approveBookingWithID:(NSString *)bookingID
 {
-    [self setBookingWithID:bookingID approved:YES errorMessage:NSLS(@"An error occurred during approving booking. Please try again later.",@"")];
+    // use dispatch async to sync pendingBookings array content
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self setBookingWithID:bookingID approved:YES errorMessage:NSLS(@"An error occurred during approving booking. Please try again later.",@"")];
+    });
 }
 
 - (void)cancelBookingWithID:(NSString *)bookingID
 {
-    [self setBookingWithID:bookingID approved:NO errorMessage:NSLS(@"An error occurred during booking cancellation. Please try again later.",@"")];
+    // use dispatch async to sync pendingBookings array content
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self setBookingWithID:bookingID approved:NO errorMessage:NSLS(@"An error occurred during booking cancellation. Please try again later.",@"")];
+    });
 }
 
 - (void)setBookingWithID:(NSString *)bookingID approved:(BOOL)approved errorMessage:(NSString *)errorMessage
 {
+    NSParameterAssert(bookingID != nil && ![bookingID isEqualToString:@""]);
     if ([pendingBookings containsObject:bookingID]) {
         return;
     }
@@ -137,11 +155,15 @@
                 return [obj[@"id"] isEqualToString:bookingID];
             }];
             if (!response.error) {
-                [self.bookings removeObjectAtIndex:idx];
-                [self.collectionView performBatchUpdates:^{
+                if (idx != NSNotFound && idx < self.bookings.count) {
+                    @synchronized (self) {
+                        [self.bookings removeObjectAtIndex:idx];
+                    }
+                    [self.collectionView.collectionViewLayout invalidateLayout];
                     [self.collectionView deleteItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:idx inSection:0]]];
+                } else {
+                    [self.collectionView reloadData];
                 }
-                                              completion:nil];
                 [self didUpdateNumberOfPendingBookings];
                 SBRequest *getPendingBookingsRequest = [[SBSession defaultSession] getPendingBookingsWithCallback:nil];
                 [[SBCache cache] invalidateCacheForRequest:getPendingBookingsRequest];
@@ -154,7 +176,9 @@
                                                                 message:errorMessage
                                                                delegate:nil cancelButtonTitle:NSLS(@"OK",@"") otherButtonTitles:nil];
                 [alert show];
-                [self.collectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:idx inSection:0]]];
+                if (idx != NSNotFound) {
+                    [self.collectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:idx inSection:0]]];
+                }
             }
         });
     }];
@@ -172,13 +196,17 @@
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"") message:response.error.message
                                                                delegate:nil cancelButtonTitle:NSLS(@"OK",@"") otherButtonTitles:nil];
                 [alert show];
-                self.bookings = nil;
+                @synchronized (self) {
+                    self.bookings = nil;
+                }
             }
             else {
-                NSUInteger pendingBookingsCount = self.bookings.count;
-                self.bookings = [NSMutableArray arrayWithArray:[response.result sortedArrayUsingComparator:^NSComparisonResult(NSDictionary * _Nonnull obj1, NSDictionary * _Nonnull obj2) {
-                    return [obj1[@"start_date"] compare:obj2[@"start_date"]];
-                }]];
+                NSUInteger pendingBookingsCount = (self.bookings ? self.bookings.count : NSNotFound);
+                @synchronized (self) {
+                    self.bookings = [NSMutableArray arrayWithArray:[response.result sortedArrayUsingComparator:^NSComparisonResult(NSDictionary * _Nonnull obj1, NSDictionary * _Nonnull obj2) {
+                        return [obj1[@"start_date"] compare:obj2[@"start_date"]];
+                    }]];
+                }
                 if (pendingBookingsCount != self.bookings.count) {
                     [self didUpdateNumberOfPendingBookings];
                     [[NSNotificationCenter defaultCenter] postNotificationName:kSBPendingBookings_DidUpdateNotification
@@ -200,7 +228,7 @@
 
 - (IBAction)enablePluginAction:(id)sender
 {
-    NSString *URLString = [NSString stringWithFormat:@"https://%@.secure.simplybook.me/settings/plugins", [SBSession defaultSession].companyLogin];
+    NSString *URLString = [NSString stringWithFormat:@"https://%@.secure.simplybook.me/settings/plugins", [SBSession defaultSession].user.credentials.companyLogin];
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:URLString]];
 }
 

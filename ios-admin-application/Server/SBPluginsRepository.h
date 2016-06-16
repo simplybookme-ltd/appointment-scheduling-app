@@ -18,6 +18,7 @@ extern NSString * const kSBPluginRepositoryLocationsPlugin;
 extern NSString * const kSBPluginRepositoryAdditionalFieldsPlugin;
 extern NSString * const kSBPluginRepositoryUnitColorPlugin;
 extern NSString * const kSBPluginRepositoryServiceCategoriesPlugin;
+extern NSString * const kSBPluginRepositoryGoogleCalendarSyncPlugin;
 
 extern NSString * const kSBBookingInfoApproveStatusNew;
 extern NSString * const kSBBookingInfoApproveStatusApproved;

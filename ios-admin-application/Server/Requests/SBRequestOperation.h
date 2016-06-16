@@ -89,6 +89,8 @@ extern NSString *const SBServerMessageKey;
 @property (nonatomic, readonly, copy) NSString *companyLogin;
 @property (nonatomic, copy, nullable) SBRequestPredispatchBlock predispatchBlock;
 
++ (void)setDomainString:(NSString *)domainString;
+
 - (nullable instancetype)initWithToken:(nullable NSString *)token comanyLogin:(nullable NSString *)companyLogin;
 - (nullable instancetype)copyWithToken:(nullable NSString *)token;
 - (NSData *)cacheKey;

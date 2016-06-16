@@ -28,6 +28,7 @@
 
 - (instancetype)initWithDict:(NSDictionary *)dict
 {
+    NSAssert(SAFE_KEY(dict, @"id"), @"no booking ID found");
     self = [super init];
     if (self) {
         self.bookingID = dict[@"id"];
@@ -44,9 +45,9 @@
         self.approveStatus = SAFE_KEY(dict, @"approve_status");
         
         self.company = [[SBBookingInfoCompany alloc] initWithDict:dict];
-        self.location = [[SBBookingInfoLocation alloc] initWithDict:dict[@"location"]];
+        self.location = [[SBBookingInfoLocation alloc] initWithDict:SAFE_KEY(dict, @"location")];
         if (SAFE_KEY(dict, @"status") != nil) {
-            self.status = [[SBBookingStatus alloc] initWithDict:dict[@"status"]];
+            self.status = [[SBBookingStatus alloc] initWithDict:SAFE_KEY(dict, @"status")];
         }
         else {
             self.status = nil;
@@ -97,6 +98,9 @@
 
 - (instancetype)initWithDict:(NSDictionary *)dict
 {
+    if ([dict isKindOfClass:[NSArray class]] || !dict) {
+        return nil;
+    }
     self = [super init];
     if (self) {
         self.email = dict[@"company_email"];
@@ -116,6 +120,7 @@
     if ([dict isKindOfClass:[NSArray class]] || !dict) {
         return nil;
     }
+    NSAssert(SAFE_KEY(dict, @"id"), @"no location ID");
     self = [super init];
     if (self) {
         self.locationID = dict[@"id"];
@@ -161,6 +166,8 @@
     if ([dict isKindOfClass:[NSArray class]] || !dict) {
         return nil;
     }
+    NSAssert(SAFE_KEY(dict, @"id"), @"no price ID");
+    NSAssert(SAFE_KEY(dict, @"sheduler_id"), @"no scheduler ID");
     self = [super init];
     if (self) {
         self.priceID = dict[@"id"];

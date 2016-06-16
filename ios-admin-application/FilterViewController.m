@@ -58,7 +58,17 @@ static NSInteger const kPickerViewTag = 100;
     SBSession *session = [SBSession defaultSession];
     self.getPerformersRequest = [session getUnitList:^(SBResponse <SBPerformersCollection *> *response) {
         if (!response.error) {
-            self.performers = response.result;
+            SBUser *user = [SBSession defaultSession].user;
+            NSAssert(user != nil, @"no user found");
+            if ([user hasAccessToACLRule:SBACLRulePerformersFullListAccess]) {
+                self.performers = response.result;
+            } else {
+                NSAssert(user.associatedPerformerID != nil && ![user.associatedPerformerID isEqualToString:@""], @"invalid associated performer value");
+                self.performers = [response.result collectionWithObjectsPassingTest:^BOOL(SBPerformer * _Nonnull object, NSUInteger idx, BOOL * _Nonnull stop) {
+                    *stop = [object.performerID isEqualToString:user.associatedPerformerID];
+                    return *stop;
+                }];
+            }
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.activityIndicator.hidden = YES;
                 NSIndexPath *selectedRow = [self.tableView indexPathForSelectedRow];
