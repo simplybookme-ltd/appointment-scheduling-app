@@ -39,11 +39,18 @@
     if (self) {
         self.builder = builder;
         self.objects = [NSMutableDictionary dictionary];
+        NSMutableArray *sortedKeys = [NSMutableArray array];
         [array enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             SBCollectionEntry *entry = [builder entryWithDict:obj];
             self.objects[entry.id] = entry;
+            [sortedKeys addObject:entry.id];
         }];
-        self.sortedKeys = [self sortedKeysForObjects:self.objects];
+        self.sortedKeys = [sortedKeys sortedArrayUsingComparator:^NSComparisonResult(NSString * _Nonnull key1, NSString * _Nonnull key2) {
+            NSObject<SBCollectionSortingProtocol> *obj1 = self.objects[key1];
+            NSObject<SBCollectionSortingProtocol> *obj2 = self.objects[key2];
+            NSComparisonResult comparisonResult = [obj1.primarySortingField compare:obj2.primarySortingField];
+            return comparisonResult == NSOrderedSame ? [obj1.secondarySortingField compare:obj2.secondarySortingField] : comparisonResult;
+        }];
     }
     return self;
 }
@@ -123,16 +130,16 @@
 - (void)enumerateUsingBlock:(void (^)(NSString *objectID, SBCollectionEntry *object, BOOL *stop))block
 {
     NSParameterAssert(block != NULL);
-    [self.objects enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        block(key, obj, stop);
+    [self.sortedKeys enumerateObjectsUsingBlock:^(NSString * _Nonnull objectKey, NSUInteger idx, BOOL * _Nonnull stop) {
+        block(objectKey, self.objects[objectKey], stop);
     }];
 }
 
 - (void)enumerateWithOptions:(NSEnumerationOptions)options usingBlock:(void (^)(NSString *objectID, SBCollectionEntry *object, BOOL *stop))block
 {
     NSParameterAssert(block != NULL);
-    [self.objects enumerateKeysAndObjectsWithOptions:options usingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        block(key, obj, stop);
+    [self.sortedKeys enumerateObjectsWithOptions:options usingBlock:^(NSString * _Nonnull objectKey, NSUInteger idx, BOOL * _Nonnull stop) {
+        block(objectKey, self.objects[objectKey], stop);
     }];
 }
 

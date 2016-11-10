@@ -19,7 +19,8 @@ typedef NS_ENUM(NSInteger, SBRequestErrorCodes) {
     SBEmptyResponseBodyErrorCode,
     SBUnexpectedServerResponseErrorCode,
     SBInvalidAuthTokenErrorCode,
-    SBServerErrorCode
+    SBServerErrorCode,
+    SBUserCancelledErrorCode
 };
 
 typedef NS_ENUM(NSInteger, SBServerErrorCodes) {

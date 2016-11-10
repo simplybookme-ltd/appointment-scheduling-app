@@ -12,11 +12,25 @@
 #import "UIColor+SimplyBookColors.h"
 #import "SBSession.h"
 #import "SBUser.h"
+#import "CalendarDayViewController.h"
+#import "CalendarDataLoaderFactory.h"
+#import "UITraitCollection+SimplyBookLayout.h"
+
+NSString * const CalendarViewDailyPerformersSegueWithIdentifier = @"calendar-view-daily-performers-type";
+NSString * const CalendarViewDailyServicesSegueWithIdentifier = @"calendar-view-daily-services-type";
+NSString * const CalendarViewWeekSegueWithIdentifier = @"calendar-view-week-type";
 
 typedef NS_ENUM(NSInteger, CalendarViewType)
 {
-    CalendarViewDayType,
+    CalendarViewDailyPerformersType,
+    CalendarViewDailyServicesType,
     CalendarViewWeekType
+};
+
+typedef NS_ENUM(NSInteger, CalendarViewTypeItemsCount)
+{
+    CalendarViewTypeRegularLayoutItemsCount = 2,
+    CalendarViewTypeWideLayoutItemsCount = 3
 };
 
 @interface CalendarViewController () <FilterViewControllerDelegate>
@@ -27,6 +41,7 @@ typedef NS_ENUM(NSInteger, CalendarViewType)
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *preferencesBarButton;
 @property (nonatomic, weak, nullable) SwipeContainerViewController *swipeContainer;
 @property (nonatomic) CalendarViewType calendarViewType;
+@property (nonatomic, strong) UISegmentedControl *periodSelector;
 
 @end
 
@@ -56,14 +71,15 @@ typedef NS_ENUM(NSInteger, CalendarViewType)
     
     SBUser *user = [SBSession defaultSession].user;
     NSAssert(user != nil, @"no user found");
-    if (![user hasAccessToACLRule:SBACLRuleEditBooking]) {
+    if (![user hasAccessToACLRule:SBACLRuleEditBooking] && ![user hasAccessToACLRule:SBACLRuleEditOwnBooking]) {
         self.addBookingBarButton.enabled = NO;
     }
 
-    UISegmentedControl *control = [[UISegmentedControl alloc] initWithItems:@[NSLS(@"Day",@""), NSLS(@"Week",@"")]];
-    control.selectedSegmentIndex = CalendarViewDayType;
-    [control addTarget:self action:@selector(calendarViewTypeChangedAction:) forControlEvents:UIControlEventValueChanged];
-    self.navigationItem.titleView = control;
+    self.periodSelector = [[UISegmentedControl alloc] initWithItems:[self periodSelectorItemsForTraitCollection:self.traitCollection]];
+    self.periodSelector.selectedSegmentIndex = CalendarViewDailyPerformersType;
+    [self.periodSelector addTarget:self action:@selector(calendarViewTypeChangedAction:) forControlEvents:UIControlEventValueChanged];
+    
+    self.navigationItem.titleView = self.periodSelector;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -92,18 +108,58 @@ typedef NS_ENUM(NSInteger, CalendarViewType)
     [self.navigationController.navigationBar setShadowImage:nil];
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+{
+    NSInteger numberOfItems = self.periodSelector.numberOfSegments;
+    NSInteger index = self.periodSelector.selectedSegmentIndex;
+    self.periodSelector = [[UISegmentedControl alloc] initWithItems:[self periodSelectorItemsForTraitCollection:self.traitCollection]];
+    [self.periodSelector addTarget:self action:@selector(calendarViewTypeChangedAction:) forControlEvents:UIControlEventValueChanged];
+    if (numberOfItems < self.periodSelector.numberOfSegments) {
+        if (index > 0) {
+            self.periodSelector.selectedSegmentIndex = [self.periodSelector numberOfSegments] - 1;
+        }
+    } else {
+        if (index == numberOfItems - 1) {
+            self.periodSelector.selectedSegmentIndex = [self.periodSelector numberOfSegments] - 1;
+        } else {
+            self.periodSelector.selectedSegmentIndex = 0;
+        }
+    }
+    self.navigationItem.titleView = self.periodSelector;
+}
+
+- (NSArray <NSString *> *)periodSelectorItemsForTraitCollection:(UITraitCollection *)traitCollection
+{
+    if ([traitCollection isWideLayout]) {
+        return @[NSLS(@"Performers Daily",@""), NSLS(@"Services Dayily",@""), NSLS(@"Week",@"")];
+    } else {
+        return @[NSLS(@"Day",@""), NSLS(@"Week",@"")];
+    }
+}
+
+- (CalendarViewType)calendarViewTypeForSelector:(UISegmentedControl *)selector
+{
+    if (selector.numberOfSegments == CalendarViewTypeWideLayoutItemsCount) {
+        return selector.selectedSegmentIndex;
+    } else {
+        return selector.selectedSegmentIndex == 0 ? 0 : CalendarViewWeekType;
+    }
+}
 
 #pragma mark - Actions
 
 - (void)calendarViewTypeChangedAction:(UISegmentedControl *)sender
 {
-    SwipeViewsDirection direction = (sender.selectedSegmentIndex > self.calendarViewType ? SwipeViewsRightToLeftDirection : SwipeViewsLeftToRightDirection);
-    switch (sender.selectedSegmentIndex) {
-        case CalendarViewDayType:
-            [self.swipeContainer performSegueWithIdentifier:@"calendar-view-day-type" sender:self swipeDirection:direction];
+    SwipeViewsDirection direction = ([self calendarViewTypeForSelector:sender] > self.calendarViewType ? SwipeViewsRightToLeftDirection : SwipeViewsLeftToRightDirection);
+    switch ([self calendarViewTypeForSelector:sender]) {
+        case CalendarViewDailyPerformersType:
+            [self.swipeContainer performSegueWithIdentifier:CalendarViewDailyPerformersSegueWithIdentifier sender:self swipeDirection:direction];
+            break;
+        case CalendarViewDailyServicesType:
+            [self.swipeContainer performSegueWithIdentifier:CalendarViewDailyServicesSegueWithIdentifier sender:self swipeDirection:direction];
             break;
         case CalendarViewWeekType:
-            [self.swipeContainer performSegueWithIdentifier:@"calendar-view-week-type" sender:self swipeDirection:direction];
+            [self.swipeContainer performSegueWithIdentifier:CalendarViewWeekSegueWithIdentifier sender:self swipeDirection:direction];
             break;
         default:
             NSAssertFail();
@@ -127,6 +183,19 @@ typedef NS_ENUM(NSInteger, CalendarViewType)
         [self.childController willRemoveFromCalendarViewContainer:self];
     }
     UIViewController <CalendarViewContainerChildController> *child = (UIViewController <CalendarViewContainerChildController> *) viewController;
+    switch (self.periodSelector.selectedSegmentIndex) {
+        case CalendarViewDailyPerformersType:
+            child.dataLoaderType = kCalendarDataLoader_DailyPerformersGroupType;
+            break;
+        case CalendarViewDailyServicesType:
+            child.dataLoaderType = kCalendarDataLoader_DailyServicesGroupType;
+            break;
+        case CalendarViewWeekType:
+            child.dataLoaderType = kCalendarDataLoader_WeeklyGroupType;
+            break;
+        default:
+            NSAssertFail();
+    }
     [child willEmbedToCalendarViewContainer:self];
 }
 

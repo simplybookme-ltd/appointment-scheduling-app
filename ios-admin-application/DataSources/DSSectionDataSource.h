@@ -32,6 +32,18 @@
 
 @property (nonatomic, copy) NSString *cellReuseIdentifier;
 
+- (CGFloat)rowHeight:(CGFloat)defaultHeight maxWidth:(CGFloat)maxWidth;
+
+@end
+
+#pragma mark -
+
+@interface TextValueRow : DSSectionRow
+
+@property (nonatomic, copy) NSString *value;
+
++ (instancetype)rowWithValue:(NSString *)value;
+
 @end
 
 #pragma mark -

@@ -21,11 +21,13 @@
 #import "UIColor+SimplyBookColors.h"
 #import "BookingApproveStatusTableViewCell.h"
 #import "SBPluginsRepository.h"
+#import "SBRequestsGroup.h"
 
 static NSString *const kBookingDetailsKeyValueCellReuseIdentifier = @"kBookingDetailsKeyValueCellReuseIdentifier";
 static NSString *const kBookingDetailsFieldsCellReuseIdentifier = @"kBookingDetailsFieldsCellReuseIdentifier";
 static NSString *const kBookingDetailsActionCellReuseIdentifier = @"kBookingDetailsActionCellReuseIdentifier";
 static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kBookingDetailsApproveStatusNewCellReuseIdentifier";
+static NSString *const kBookingDetailsCommentCellReuseIdentifier = @"kBookingDetailsCommentCellReuseIdentifier";
 
 @interface BookingDetailsViewController ()
 {
@@ -35,6 +37,7 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
 @property (nonatomic, weak) IBOutlet UITableView *tableView;
 @property (nonatomic, weak) IBOutlet UIActivityIndicatorView *activityIndicator;
 @property (nonatomic, strong) SBBookingInfo *booking;
+@property (nonatomic, strong) NSString *bookingComment;
 @property (nonatomic, strong) NSMutableArray *sections;
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
 @property (nonatomic, strong) NSNumberFormatter *moneyFormatter;
@@ -54,7 +57,7 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
     
     SBUser *user = [SBSession defaultSession].user;
     NSAssert(user != nil, @"no user found");
-    if (![user hasAccessToACLRule:SBACLRuleEditBooking]) {
+    if (![user hasAccessToACLRule:SBACLRuleEditBooking] && ![user hasAccessToACLRule:SBACLRuleEditOwnBooking]) {
         self.navigationItem.rightBarButtonItem = nil;
     }
     
@@ -72,6 +75,7 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
     [self.tableView registerNib:[UINib nibWithNibName:@"ACHAdditionalFieldTableViewCell" bundle:nil] forCellReuseIdentifier:kBookingDetailsFieldsCellReuseIdentifier];
     [self.tableView registerNib:[UINib nibWithNibName:@"BookingApproveStatusTableViewCell" bundle:nil] forCellReuseIdentifier:kBookingDetailsApproveStatusNewCellReuseIdentifier];
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:kBookingDetailsActionCellReuseIdentifier];
+    [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:kBookingDetailsCommentCellReuseIdentifier];
     self.tableView.estimatedRowHeight = 30.;
     self.tableView.rowHeight = UITableViewAutomaticDimension;
     
@@ -119,8 +123,9 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
 
 - (void)loadData
 {
-    SBRequest *request = [[SBSession defaultSession] getBookingDetails:self.bookingID callback:^(SBResponse<SBBookingInfo *> *response) {
-        [pendingRequests removeObject:response.requestGUID];
+    SBRequestsGroup *group = [SBRequestsGroup new];
+    
+    SBRequest *bookingRequest = [[SBSession defaultSession] getBookingDetails:self.bookingID callback:^(SBResponse<SBBookingInfo *> *response) {
         if (!response.error) {
             if (self.booking && ![self.booking.clientID isEqualToString:response.result.clientID]) {
                 self.clientName = nil;
@@ -128,20 +133,32 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
                 self.clientPhone = nil;
             }
             self.booking = response.result;
-            dispatch_async(dispatch_get_main_queue(), ^{
+        }
+    }];
+    [group addRequest:bookingRequest];
+    
+    SBRequest *commentRequest = [[SBSession defaultSession] getBookingComment:self.bookingID callback:^(SBResponse<id> * _Nonnull response) {
+        if (response.result) {
+            self.bookingComment = response.result;
+        }
+    }];
+    [group addRequest:commentRequest];
+    
+    group.callback = ^(SBResponse *response) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [pendingRequests removeObject:response.requestGUID];
+            if (!response.error) {
                 self.activityIndicator.hidden = YES;
                 [self reloadSections];
                 SBUser *user = [SBSession defaultSession].user;
                 NSAssert(user != nil, @"no user found");
-                if ([self.booking.isConfirmed boolValue] && [user hasAccessToACLRule:SBACLRuleEditBooking]) {
+                if ([self.booking.isConfirmed boolValue] && ([user hasAccessToACLRule:SBACLRuleEditBooking] || [user hasAccessToACLRule:SBACLRuleEditOwnBooking])) {
                     [self showCancelBookingButton];
                 }
                 self.navigationItem.rightBarButtonItem.enabled = YES;
                 self.cancelButton.enabled = YES;
                 [self.tableView reloadData];
-            });
-        } else if (!response.canceled){
-            dispatch_async(dispatch_get_main_queue(), ^{
+            } else if (!response.canceled) {
                 self.activityIndicator.hidden = YES;
                 self.navigationItem.rightBarButtonItem.enabled = YES;
                 self.cancelButton.enabled = YES;
@@ -149,16 +166,16 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
                                                                delegate:nil cancelButtonTitle:NSLS(@"OK",@"")
                                                       otherButtonTitles:nil];
                 [alert show];
-            });
-
-        }
-    }];
+            }
+        });
+        
+    };
     
     self.activityIndicator.hidden = NO;
     self.navigationItem.rightBarButtonItem.enabled = NO;
     self.cancelButton.enabled = NO;
-    [pendingRequests addObject:request.GUID];
-    [[SBSession defaultSession] performReqeust:request];
+    [pendingRequests addObject:group.GUID];
+    [[SBSession defaultSession] performReqeust:group];
 }
 
 - (void)loadClientData
@@ -460,6 +477,15 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
         }
         [self.sections addObject:additionalFieldSection];
     }
+    
+    if (self.bookingComment && ![self.bookingComment isEqualToString:@""]) {
+        DSSectionDataSource *commentSection = [DSSectionDataSource new];
+        commentSection.estimatedRowHeight = 40;
+        commentSection.cellReuseIdentifier = kBookingDetailsCommentCellReuseIdentifier;
+        commentSection.sectionTitle = NSLS(@"Comment",@"");
+        [commentSection addItem:[TextValueRow rowWithValue:self.bookingComment]];
+        [self.sections addObject:commentSection];
+    }
 }
 
 - (void)showCancelBookingButton
@@ -589,7 +615,7 @@ static NSString *const kBookingDetailsApproveStatusNewCellReuseIdentifier = @"kB
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     DSSectionDataSource *sectionDataSource = self.sections[indexPath.section];
-    return sectionDataSource.estimatedRowHeight;
+    return [sectionDataSource.items[indexPath.row] rowHeight:sectionDataSource.estimatedRowHeight maxWidth:tableView.frame.size.width];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section

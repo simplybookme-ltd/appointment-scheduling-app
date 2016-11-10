@@ -35,8 +35,8 @@
     NSAssert(self.startDate != nil, @"no start date specified");
     NSAssert(self.endDate != nil, @"no end date specified");
     NSAssert(self.unitID != nil, @"");
-    return @[[[NSDateFormatter sb_serverDateTimeFormatter] stringFromDate:self.startDate],
-             [[NSDateFormatter sb_serverDateTimeFormatter] stringFromDate:self.endDate],
+    return @[self.startDate ? [[NSDateFormatter sb_serverDateTimeFormatter] stringFromDate:self.startDate] : [[NSDateFormatter sb_serverDateTimeFormatter] stringFromDate:[NSDate date]],
+             self.endDate ? [[NSDateFormatter sb_serverDateTimeFormatter] stringFromDate:self.endDate] : [[NSDateFormatter sb_serverDateTimeFormatter] stringFromDate:[NSDate date]],
              self.unitID];
 }
 

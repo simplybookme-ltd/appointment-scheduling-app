@@ -20,6 +20,9 @@ extern NSString * const kCalendarSectionDataSourcePerformerIDBindingKey;
 @property (nonatomic, strong, readonly) NSArray <NSObject <SBBookingProtocol> *> * items;
 @property (nonatomic, strong, readonly) NSString * title;
 @property (nonatomic, strong, nullable) NSObject *sectionID;
+@property (nonatomic, strong, nullable) NSDate *startDate;
+@property (nonatomic, strong, nullable) NSString *performerID;
+@property (nonatomic, strong, nullable) NSString *serviceID;
 
 - (nullable instancetype)initWithTitle:(NSString *)sectionTitle
                              predicate:(NSPredicate *)predicate

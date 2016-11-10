@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9060" systemVersion="14F1021" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1108" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9051"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Navigation Controller-->
         <scene sceneID="S4p-Yw-sQu">
             <objects>
                 <navigationController storyboardIdentifier="bookingsListPad" id="8p7-s4-JLP" sceneMemberID="viewController">
-                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="Auw-JA-kOd">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -21,7 +21,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="naS-jo-bqr" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1595" y="-505"/>
+            <point key="canvasLocation" x="1237" y="-505"/>
         </scene>
         <!--Bookings List View Controller-->
         <scene sceneID="ObL-kB-0b2">
@@ -32,12 +32,11 @@
                         <viewControllerLayoutGuide type="bottom" id="r2Q-ZJ-MWl"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="YOF-sk-Wxo">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="pL4-Tw-DtF">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="5" minimumInteritemSpacing="5" id="Mfn-N8-btz">
                                     <size key="itemSize" width="50" height="70"/>
                                     <size key="headerReferenceSize" width="50" height="45"/>
@@ -46,17 +45,16 @@
                                 </collectionViewFlowLayout>
                                 <cells/>
                                 <collectionReusableView key="sectionHeaderView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="time-header" id="1Wg-zf-n4P">
-                                    <rect key="frame" x="0.0" y="64" width="320" height="45"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="768" height="45"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <label opaque="NO" userInteractionEnabled="NO" tag="100" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QNo-1q-jcu">
-                                            <rect key="frame" x="8" y="14" width="42" height="21"/>
+                                        <label opaque="NO" userInteractionEnabled="NO" tag="100" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QNo-1q-jcu">
                                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
                                     </subviews>
-                                    <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     <constraints>
                                         <constraint firstItem="QNo-1q-jcu" firstAttribute="centerY" secondItem="1Wg-zf-n4P" secondAttribute="centerY" id="4SE-19-d3H"/>
                                         <constraint firstItem="QNo-1q-jcu" firstAttribute="leading" secondItem="1Wg-zf-n4P" secondAttribute="leadingMargin" id="D6d-py-uEP"/>
@@ -67,19 +65,24 @@
                                     <outlet property="delegate" destination="KSg-0N-2me" id="njw-LS-cHw"/>
                                 </connections>
                             </collectionView>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="1iA-ft-1FB">
+                                <color key="color" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </activityIndicatorView>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="r2Q-ZJ-MWl" firstAttribute="top" secondItem="pL4-Tw-DtF" secondAttribute="bottom" id="Arh-7h-KCP"/>
                             <constraint firstAttribute="trailing" secondItem="pL4-Tw-DtF" secondAttribute="trailing" id="apm-Tk-KFo"/>
+                            <constraint firstItem="1iA-ft-1FB" firstAttribute="centerY" secondItem="YOF-sk-Wxo" secondAttribute="centerY" id="apt-p8-5wP"/>
                             <constraint firstItem="pL4-Tw-DtF" firstAttribute="leading" secondItem="YOF-sk-Wxo" secondAttribute="leading" id="cqM-ug-FZf"/>
+                            <constraint firstItem="1iA-ft-1FB" firstAttribute="centerX" secondItem="YOF-sk-Wxo" secondAttribute="centerX" id="fnn-De-vCO"/>
                             <constraint firstItem="pL4-Tw-DtF" firstAttribute="top" secondItem="YOF-sk-Wxo" secondAttribute="top" id="kzH-yZ-e26"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="gZL-S6-uWC"/>
                     <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
-                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
                     <connections>
+                        <outlet property="activityIndicator" destination="1iA-ft-1FB" id="YIb-Gb-e7a"/>
                         <outlet property="collectionView" destination="pL4-Tw-DtF" id="nKf-Ue-y9d"/>
                         <outlet property="flowLayout" destination="Mfn-N8-btz" id="0TH-iF-tcm"/>
                         <segue destination="bq0-mM-2xd" kind="show" identifier="showBookingDetails" id="Xr7-xG-jz0"/>
@@ -95,7 +98,6 @@
             <objects>
                 <navigationController storyboardIdentifier="bookingDetailsPad" id="as2-T9-ybd" sceneMemberID="viewController">
                     <nil key="simulatedStatusBarMetrics"/>
-                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="oDx-iF-vjv">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -106,7 +108,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="K7I-0f-ihO" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2028" y="276"/>
+            <point key="canvasLocation" x="2027" y="126"/>
         </scene>
         <!--Booking Details View Controller-->
         <scene sceneID="eTT-zD-bqM">
@@ -117,23 +119,21 @@
                         <viewControllerLayoutGuide type="bottom" id="Vky-xA-r6W"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="RfM-bZ-dGN">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" translatesAutoresizingMaskIntoConstraints="NO" id="HyF-Qf-IcE">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                                <color key="backgroundColor" red="0.93725490196078431" green="0.93725490196078431" blue="0.95686274509803926" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="backgroundColor" red="0.93725490196078431" green="0.93725490196078431" blue="0.95686274509803926" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <outlet property="dataSource" destination="bq0-mM-2xd" id="Ryr-un-nZ2"/>
                                     <outlet property="delegate" destination="bq0-mM-2xd" id="mgl-CZ-VrM"/>
                                 </connections>
                             </tableView>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="F8a-nY-VOG">
-                                <rect key="frame" x="142" y="266" width="37" height="37"/>
-                                <color key="color" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="color" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </activityIndicatorView>
                         </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstAttribute="centerY" secondItem="F8a-nY-VOG" secondAttribute="centerY" id="0Ze-A3-h4d"/>
                             <constraint firstAttribute="trailing" secondItem="HyF-Qf-IcE" secondAttribute="trailing" id="Cj9-eO-KZE"/>
@@ -151,7 +151,6 @@
                         </barButtonItem>
                     </navigationItem>
                     <nil key="simulatedStatusBarMetrics"/>
-                    <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
                     <connections>
                         <outlet property="activityIndicator" destination="F8a-nY-VOG" id="4Pu-5g-kun"/>
                         <outlet property="tableView" destination="HyF-Qf-IcE" id="MBF-CG-O8v"/>
@@ -167,11 +166,11 @@
                 <viewControllerPlaceholder storyboardIdentifier="editBookingForm" storyboardName="AddEditBooking" referencedIdentifier="bookingForm" id="wuN-xj-6Va" userLabel="Edit Booking Form" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ccE-aY-0eL" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3118" y="-218"/>
+            <point key="canvasLocation" x="3273" y="-219"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="Xr7-xG-jz0"/>
     </inferredMetricsTieBreakers>
-    <color key="tintColor" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="calibratedRGB"/>
+    <color key="tintColor" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
 </document>

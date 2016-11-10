@@ -41,6 +41,14 @@ typedef void (^DidChangeSelectedDateBlock)(NSDate *selectedDate);
  */
 @interface LSWeekView : UIView
 
+/**
+ By default is set to [NSCalendar firstWeekday]
+ 1 for sunday
+ 2 for monday
+ 3 for tuesday
+ ...
+ */
+@property (nonatomic) NSUInteger firstWeekday;
 
 #pragma mark - Lifecycle
 /** @name Lifecycle */

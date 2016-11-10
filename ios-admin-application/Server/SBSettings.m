@@ -8,6 +8,10 @@
 
 #import "SBSettings.h"
 
+NSString * const kSBSettingsDeviceTokenKey = @"kSBSettingsDeviceTokenKey";
+NSString * const kSBSettingsNotificationsEnabledKey = @"kSBSettingsNotificationsEnabledKey";
+NSString * const kSBSettingsCalendarFirstWeekdayKey = @"kSBSettingsCalendarFirstWeekdayKey";
+
 @interface SBSettings ()
 {
     NSMutableDictionary *settings;
@@ -57,6 +61,7 @@
     else {
         settings[key] = object;
     }
+    [self writeToFile];
     [self didChangeValueForKey:key];
 }
 

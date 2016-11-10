@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1108" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="U0r-Y3-Hyq">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Add New Booking Form-->
+        <scene sceneID="IUO-hJ-ZzB">
+            <objects>
+                <viewControllerPlaceholder storyboardIdentifier="addBookingForm1" storyboardName="AddEditBooking" referencedIdentifier="bookingForm" id="8sR-S5-uwx" userLabel="Add New Booking Form" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="WxR-hU-eUg" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3789" y="-461"/>
+        </scene>
+        <!--Booking Details (iPhone)-->
+        <scene sceneID="a2s-TU-zm6">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingDetailsPhone" id="8G1-Ea-DlO" userLabel="Booking Details (iPhone)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ek9-mx-Kte" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3794" y="-264"/>
+        </scene>
+        <!--Booking List (iPad)-->
+        <scene sceneID="PPq-4K-7sx">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingsListPad" id="NC2-b6-7jz" userLabel="Booking List (iPad)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="HeZ-bA-dR1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3774" y="-168"/>
+        </scene>
+        <!--Booking Details (iPad)-->
+        <scene sceneID="A1E-44-geH">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingDetailsPad" id="7gt-Ws-CsJ" userLabel="Booking Details (iPad)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Hq4-NF-7j4" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3783" y="-352"/>
+        </scene>
+        <!--Booking List (iPhone)-->
+        <scene sceneID="VdB-84-afP">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingsList" id="t3a-rC-dr7" userLabel="Booking List (iPhone)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wwb-DL-gtg" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3782" y="-57"/>
+        </scene>
+        <!--Calendar Day View Controller-->
+        <scene sceneID="xVt-or-Vdn">
+            <objects>
+                <viewController automaticallyAdjustsScrollViewInsets="NO" id="U0r-Y3-Hyq" customClass="CalendarDayViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="vs7-eI-mnJ"/>
+                        <viewControllerLayoutGuide type="bottom" id="O3z-k9-yIO"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="SXw-9z-uGB">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="88l-Vy-m3p">
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="tintColor" red="0.80000000000000004" green="1" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="5" minimumInteritemSpacing="10" id="2g0-r6-pWS">
+                                    <size key="itemSize" width="50" height="50"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                                <connections>
+                                    <outlet property="delegate" destination="U0r-Y3-Hyq" id="HVA-m9-18X"/>
+                                </connections>
+                            </collectionView>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No working hours" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="K2d-lD-mXv">
+                                <fontDescription key="fontDescription" type="system" pointSize="21"/>
+                                <color key="textColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ME8-hu-GNa">
+                                <attributedString key="attributedText">
+                                    <fragment content="No internet connection.">
+                                        <attributes>
+                                            <color key="NSColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <font key="NSFont" size="15" name="Helvetica"/>
+                                            <integer key="NSLigature" value="0"/>
+                                            <font key="NSOriginalFont" size="15" name="Helvetica"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" defaultTabInterval="28.850000000000001" tighteningFactorForTruncation="0.0" allowsDefaultTighteningForTruncation="NO">
+                                                <tabStops>
+                                                    <textTab alignment="left" location="28.850000381469727">
+                                                        <options/>
+                                                    </textTab>
+                                                </tabStops>
+                                            </paragraphStyle>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment>
+                                        <string key="content" base64-UTF8="YES">
+Cg
+</string>
+                                        <attributes>
+                                            <color key="NSColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <font key="NSFont" size="12" name="Helvetica"/>
+                                            <integer key="NSLigature" value="0"/>
+                                            <font key="NSOriginalFont" size="12" name="Helvetica"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" defaultTabInterval="28.850000000000001" tighteningFactorForTruncation="0.0" allowsDefaultTighteningForTruncation="NO">
+                                                <tabStops>
+                                                    <textTab alignment="left" location="28.850000381469727">
+                                                        <options/>
+                                                    </textTab>
+                                                </tabStops>
+                                            </paragraphStyle>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment content="You can check Upcoming bookings which available offline.">
+                                        <attributes>
+                                            <color key="NSColor" red="0.25" green="0.25" blue="0.25" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <font key="NSFont" size="13" name="Helvetica"/>
+                                            <integer key="NSLigature" value="0"/>
+                                            <font key="NSOriginalFont" size="12" name="Helvetica"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" defaultTabInterval="28.850000000000001" tighteningFactorForTruncation="0.0" allowsDefaultTighteningForTruncation="NO">
+                                                <tabStops>
+                                                    <textTab alignment="left" location="28.850000381469727">
+                                                        <options/>
+                                                    </textTab>
+                                                </tabStops>
+                                            </paragraphStyle>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="HGC-nl-z1A">
+                                <color key="color" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </activityIndicatorView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AAI-70-l3c" customClass="LSWeekView">
+                                <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="76" id="sNb-Tg-rzc">
+                                        <variation key="heightClass=compact-widthClass=compact" constant="59"/>
+                                        <variation key="heightClass=compact-widthClass=regular" constant="59"/>
+                                        <variation key="heightClass=regular-widthClass=regular" constant="59"/>
+                                    </constraint>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="88l-Vy-m3p" firstAttribute="leading" secondItem="SXw-9z-uGB" secondAttribute="leading" id="6JQ-1l-bsk"/>
+                            <constraint firstItem="HGC-nl-z1A" firstAttribute="centerX" secondItem="SXw-9z-uGB" secondAttribute="centerX" id="7mp-oh-vD3"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="ME8-hu-GNa" secondAttribute="trailing" constant="20" id="J6U-wC-Y35"/>
+                            <constraint firstItem="AAI-70-l3c" firstAttribute="top" secondItem="SXw-9z-uGB" secondAttribute="topMargin" constant="-1" id="LUs-Gr-o8C"/>
+                            <constraint firstItem="ME8-hu-GNa" firstAttribute="centerY" secondItem="SXw-9z-uGB" secondAttribute="centerY" id="Mod-Ea-tZR"/>
+                            <constraint firstItem="ME8-hu-GNa" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="SXw-9z-uGB" secondAttribute="leading" constant="20" id="Nb7-qJ-ww2"/>
+                            <constraint firstAttribute="trailing" secondItem="AAI-70-l3c" secondAttribute="trailing" id="OAn-Vf-nJE"/>
+                            <constraint firstItem="HGC-nl-z1A" firstAttribute="centerY" secondItem="SXw-9z-uGB" secondAttribute="centerY" id="V1F-Ci-zfm"/>
+                            <constraint firstItem="AAI-70-l3c" firstAttribute="leading" secondItem="SXw-9z-uGB" secondAttribute="leading" id="bhD-eY-Luc"/>
+                            <constraint firstItem="ME8-hu-GNa" firstAttribute="centerX" secondItem="SXw-9z-uGB" secondAttribute="centerX" id="cWI-0X-BFL"/>
+                            <constraint firstItem="O3z-k9-yIO" firstAttribute="top" secondItem="88l-Vy-m3p" secondAttribute="bottom" id="drT-Xf-JVq"/>
+                            <constraint firstItem="K2d-lD-mXv" firstAttribute="centerY" secondItem="SXw-9z-uGB" secondAttribute="centerY" id="erL-r0-tti"/>
+                            <constraint firstItem="88l-Vy-m3p" firstAttribute="top" secondItem="AAI-70-l3c" secondAttribute="bottom" id="fdR-Sb-CuZ"/>
+                            <constraint firstItem="K2d-lD-mXv" firstAttribute="centerX" secondItem="SXw-9z-uGB" secondAttribute="centerX" id="y3u-4b-KI8"/>
+                            <constraint firstAttribute="trailing" secondItem="88l-Vy-m3p" secondAttribute="trailing" id="yRi-cS-E6V"/>
+                        </constraints>
+                    </view>
+                    <nil key="simulatedStatusBarMetrics"/>
+                    <connections>
+                        <outlet property="activityIndicator" destination="HGC-nl-z1A" id="SLQ-2F-6Ln"/>
+                        <outlet property="collectionView" destination="88l-Vy-m3p" id="6Nr-jB-t2I"/>
+                        <outlet property="noCollectionLabel" destination="ME8-hu-GNa" id="ulS-ET-m1I"/>
+                        <outlet property="noWorkingHoursLabel" destination="K2d-lD-mXv" id="e3D-gY-AQ0"/>
+                        <outlet property="weekView" destination="AAI-70-l3c" id="gBc-SR-5CS"/>
+                        <segue destination="8sR-S5-uwx" kind="presentation" identifier="addBooking" modalPresentationStyle="formSheet" id="uhf-2Q-yJv"/>
+                        <segue destination="t3a-rC-dr7" kind="show" identifier="showBookingList" id="3yC-0f-Z2k"/>
+                        <segue destination="8G1-Ea-DlO" kind="show" identifier="showBookingDetails" id="ORz-yY-1OE"/>
+                        <segue destination="NC2-b6-7jz" kind="presentation" identifier="showBookingList-iPad" modalPresentationStyle="formSheet" id="JDa-UI-IZe"/>
+                        <segue destination="7gt-Ws-CsJ" kind="presentation" identifier="showBookingDetails-iPad" modalPresentationStyle="formSheet" id="EZ0-Rl-4NJ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0qP-Or-mea" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2994" y="-264"/>
+        </scene>
+    </scenes>
+    <color key="tintColor" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+</document>

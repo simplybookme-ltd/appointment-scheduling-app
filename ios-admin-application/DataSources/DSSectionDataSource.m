@@ -76,6 +76,47 @@
     NSAssertNotImplemented();
 }
 
+- (CGFloat)rowHeight:(CGFloat)defaultHeight maxWidth:(CGFloat)maxWidth
+{
+    return defaultHeight;
+}
+
+@end
+
+#pragma mark -
+
+@implementation TextValueRow
+
++ (instancetype)rowWithValue:(NSString *)value
+{
+    TextValueRow *row = [[self alloc] init];
+    row.value = value;
+    return row;
+}
+
+- (void)configureCell:(UITableViewCell *)cell
+{
+    cell.textLabel.numberOfLines = 0;
+    cell.textLabel.text = self.value;
+}
+
+- (CGFloat)rowHeight:(CGFloat)defaultHeight maxWidth:(CGFloat)maxWidth
+{
+    if (!self.value) {
+        return [super rowHeight:defaultHeight maxWidth:maxWidth];
+    }
+    static UITableViewCell *cell = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        cell = [[UITableViewCell alloc] initWithFrame:CGRectZero];
+    });
+    [self configureCell:cell];
+    [cell setNeedsLayout];
+    [cell layoutIfNeeded];
+    CGSize size = [cell systemLayoutSizeFittingSize:CGSizeMake(maxWidth, 0)];
+    return size.height;
+}
+
 @end
 
 #pragma mark -

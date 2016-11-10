@@ -160,9 +160,6 @@ NSString * const kDashboardSegmentedWidgetHeaderSupplementaryReuseIdentifier = @
 
 - (NSUInteger)numberOfItems
 {
-    if ([self.selectedSegment isLoading] || ![self.selectedSegment isDataLoaded] || [self.selectedSegment isDataEmpty]) {
-        return 0;
-    }
     return self.selectedSegment.items.count;
 }
 

@@ -93,6 +93,9 @@
     if (request == self) {
         return YES;
     }
+    if (self.error) {
+        return NO;
+    }
     if (response.error) {
         self.error = response.error;
         [self cancel];

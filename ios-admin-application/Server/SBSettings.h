@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-#define kSBSettingsDeviceTokenKey @"kSBSettingsDeviceTokenKey"
-#define kSBSettingsNotificationsEnabledKey @"kSBSettingsNotificationsEnabledKey"
+extern NSString * const kSBSettingsDeviceTokenKey;
+extern NSString * const kSBSettingsNotificationsEnabledKey;
+extern NSString * const kSBSettingsCalendarFirstWeekdayKey;
 
 @interface SBSettings : NSObject
 

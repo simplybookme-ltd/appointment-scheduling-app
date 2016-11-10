@@ -8,6 +8,11 @@
 
 #import "SBGetWorkDaysTimesRequest.h"
 #import "NSDateFormatter+ServerParser.h"
+#import "NSDate+TimeManipulation.h"
+
+NSString * const kSBGetWorkDaysTimesRequest_PerformerType = @"unit_group";
+NSString * const kSBGetWorkDaysTimesRequest_DefaultType = @"unit_group";
+NSString * const kSBGetWorkDaysTimesRequest_ServiceType = @"event";
 
 @interface SBGetWorkDaysTimesResultProcessor : SBResultProcessor
 
@@ -24,6 +29,7 @@
     typeof (self) copy = [super copyWithToken:token];
     copy.startDate = self.startDate;
     copy.endDate = self.endDate;
+    copy.type = self.type;
     return copy;
 }
 
@@ -34,8 +40,15 @@
 
 - (NSArray *)params
 {
+    NSAssert(self.startDate != nil, @"start date parameter not specified");
+    NSAssert(self.endDate != nil, @"end date parameter not specified");
+    NSAssert((self.type != nil && [@[kSBGetWorkDaysTimesRequest_ServiceType, kSBGetWorkDaysTimesRequest_PerformerType] containsObject:self.type]), @"unexpected type parameter value (%@)", self.type);
+    if (self.type == nil) {
+        self.type = kSBGetWorkDaysTimesRequest_PerformerType;
+    }
     return @[[[NSDateFormatter sb_serverDateFormatter] stringFromDate:self.startDate ? self.startDate : [NSDate date]],
-             [[NSDateFormatter sb_serverDateFormatter] stringFromDate:self.endDate ? self.endDate : [NSDate date]]];
+             [[NSDateFormatter sb_serverDateFormatter] stringFromDate:self.endDate ? self.endDate : [[NSDate date] nextDayDate]],
+             self.type];
 }
 
 - (SBResultProcessor *)resultProcessor
@@ -54,6 +67,10 @@
         self.error = classCheck.error;
         self.result = result;
         return NO;
+    }
+    if ([result isKindOfClass:[NSArray class]] && [(NSArray *)result count] == 0) {
+        self.result = @{};
+        return YES;
     }
     if (![classCheck process:[[result allValues] firstObject]]) {
         self.error = classCheck.error;

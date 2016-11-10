@@ -9,6 +9,7 @@
 #import "SBBookingFormHoursSelectorDataSource.h"
 #import "SBWorkingHoursMatrix.h"
 #import "NSDate+TimeManipulation.h"
+#import "SBDateRange.h"
 
 @interface SBBookingFormHoursSelectorDataSource ()
 {
@@ -18,8 +19,8 @@
 }
 
 @property (nonatomic, strong, readwrite, nullable) SBWorkingHoursMatrix *workingHoursMatrix;
-@property (nonatomic, strong, readwrite, nullable) NSObject *recordID;
 @property (nonatomic, strong, readwrite, nullable) NSArray *hours;
+@property (nonatomic, strong, readwrite, nullable) NSMutableDictionary <NSObject *, NSArray *> *googleBusyHours;
 
 @end
 
@@ -58,6 +59,20 @@
     self.hours = hours;
 }
 
+- (void)setGoogleBusyHours:(nonnull NSArray <NSDictionary <NSString *, NSDate *> *> *)hours forRecordID:(NSObject <NSCopying> *)recordID
+{
+    NSParameterAssert(hours != nil);
+    NSParameterAssert(recordID != nil);
+    if (self.googleBusyHours == nil) {
+        self.googleBusyHours = [NSMutableDictionary dictionary];
+    }
+    NSMutableArray *list = [NSMutableArray array];
+    for (NSDictionary <NSString *, NSDate *> *busyHour in hours) {
+        [list addObject:[SBDateRange dateRangeWithStart:busyHour[@"from"] end:busyHour[@"to"]]];
+    }
+    self.googleBusyHours[recordID] = list;
+}
+
 - (BOOL)isBreakHour:(NSDate *)hour
 {
     __block BOOL isBreakHour = NO;
@@ -68,6 +83,19 @@
         }
     }];
     return isBreakHour;
+}
+
+- (BOOL)isGoogleBusyHour:(NSDate *)hour
+{
+    if (!self.recordID || self.googleBusyHours[self.recordID] == nil) {
+        return NO;
+    }
+    for (SBDateRange *range in self.googleBusyHours[self.recordID]) {
+        if ([range containsDate:hour]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView
@@ -91,16 +119,23 @@
         paragraphStyle.alignment = NSTextAlignmentLeft;
     }
     NSMutableAttributedString *attributedString = nil;
-    BOOL isBreakHour = [self isBreakHour:self.hours[row]];
-    if (isBreakHour) {
-        NSString *string = [NSString stringWithFormat:@"• %@ %@", hour, NSLS(@"(not working)", @"add/edit booking form: not working hour in hour selector")];
+    NSString *breakHourMessage = nil;
+    if ([self isBreakHour:self.hours[row]]) {
+        breakHourMessage = NSLS(@"(not working)", @"add/edit booking form: not working hour in hour selector");
+    }
+    else if ([self isGoogleBusyHour:self.hours[row]]) {
+        breakHourMessage = NSLS(@"(Google Calendar busy)", @"add/edit booking form: not working hour in hour selector");
+    }
+    
+    if (breakHourMessage != nil) {
+        NSString *string = [NSString stringWithFormat:@"• %@ %@", hour, breakHourMessage];
         attributedString = [[NSMutableAttributedString alloc] initWithString:string];
         [attributedString addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor], NSFontAttributeName: [UIFont systemFontOfSize:10]}
                                   range:NSMakeRange(0, attributedString.length)];
         [attributedString addAttributes:@{NSForegroundColorAttributeName : [UIColor grayColor]}
                                   range:NSMakeRange(0, @"•".length)];
         [attributedString addAttributes:@{NSFontAttributeName : [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]}
-                                  range:[string rangeOfString:NSLS(@"(not working)","")]];
+                                  range:[string rangeOfString:breakHourMessage]];
     }
     else {
         attributedString = [[NSMutableAttributedString alloc] initWithString:[NSString stringWithFormat:@"• %@", hour]];

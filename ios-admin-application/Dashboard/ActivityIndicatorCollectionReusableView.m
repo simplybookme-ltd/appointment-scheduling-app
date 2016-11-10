@@ -10,8 +10,4 @@
 
 @implementation ActivityIndicatorCollectionReusableView
 
-- (void)awakeFromNib {
-    // Initialization code
-}
-
 @end

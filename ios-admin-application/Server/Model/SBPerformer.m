@@ -67,12 +67,12 @@
 
 - (id)primarySortingField
 {
-    return self.position;
+    return nil;
 }
 
 - (id)secondarySortingField
 {
-    return [self.name lowercaseString];
+    return nil;
 }
 
 - (NSString *)description

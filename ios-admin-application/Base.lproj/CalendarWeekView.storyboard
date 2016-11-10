@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1108" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="C3Y-LN-xSP">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Add New Booking Form-->
+        <scene sceneID="DRV-H9-qGZ">
+            <objects>
+                <viewControllerPlaceholder storyboardName="AddEditBooking" referencedIdentifier="bookingForm" id="1PP-kW-Qom" userLabel="Add New Booking Form" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="T1X-v3-qJL" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3793" y="-424"/>
+        </scene>
+        <!--Booking Details (iPad)-->
+        <scene sceneID="qLE-Ec-dH8">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingDetailsPad" id="FHP-dU-f5r" userLabel="Booking Details (iPad)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="1bT-Ba-Ffh" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3786" y="-359"/>
+        </scene>
+        <!--Booking Details (iPhone)-->
+        <scene sceneID="Vwx-4X-zks">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingDetailsPhone" id="DJc-vz-GLK" userLabel="Booking Details (iPhone)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0MO-Rx-WJr" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3799" y="-299"/>
+        </scene>
+        <!--Booking List (iPad)-->
+        <scene sceneID="ag0-fN-EUO">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingsListPad" id="6VF-vl-IAC" userLabel="Booking List (iPad)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="6bY-Xb-9Mb" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3771" y="-232"/>
+        </scene>
+        <!--Booking List (iPhone)-->
+        <scene sceneID="Vsv-n8-u1Y">
+            <objects>
+                <viewControllerPlaceholder storyboardName="BookingDetails" referencedIdentifier="bookingsList" id="dAd-8Y-3xN" userLabel="Booking List (iPhone)" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fIM-qd-43K" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3783" y="-159"/>
+        </scene>
+        <!--Calendar Week View Controller-->
+        <scene sceneID="RSm-UB-uKW">
+            <objects>
+                <viewController id="C3Y-LN-xSP" customClass="CalendarWeekViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="DTB-PU-40E"/>
+                        <viewControllerLayoutGuide type="bottom" id="3Fj-Zs-g5B"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="77S-5F-Xc0">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="FSD-lL-6Bc">
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="u1q-dD-2YY">
+                                    <size key="itemSize" width="50" height="50"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells/>
+                                <connections>
+                                    <outlet property="delegate" destination="C3Y-LN-xSP" id="ctw-fZ-yP9"/>
+                                </connections>
+                            </collectionView>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gr5-wM-7fQ">
+                                <attributedString key="attributedText">
+                                    <fragment content="No internet connection.">
+                                        <attributes>
+                                            <color key="NSColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <font key="NSFont" size="15" name="Helvetica"/>
+                                            <integer key="NSLigature" value="0"/>
+                                            <font key="NSOriginalFont" size="15" name="Helvetica"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" defaultTabInterval="28.850000000000001" tighteningFactorForTruncation="0.0" allowsDefaultTighteningForTruncation="NO">
+                                                <tabStops>
+                                                    <textTab alignment="left" location="28.850000381469727">
+                                                        <options/>
+                                                    </textTab>
+                                                </tabStops>
+                                            </paragraphStyle>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment>
+                                        <string key="content" base64-UTF8="YES">
+Cg
+</string>
+                                        <attributes>
+                                            <color key="NSColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <font key="NSFont" size="12" name="Helvetica"/>
+                                            <integer key="NSLigature" value="0"/>
+                                            <font key="NSOriginalFont" size="12" name="Helvetica"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" defaultTabInterval="28.850000000000001" tighteningFactorForTruncation="0.0" allowsDefaultTighteningForTruncation="NO">
+                                                <tabStops>
+                                                    <textTab alignment="left" location="28.850000381469727">
+                                                        <options/>
+                                                    </textTab>
+                                                </tabStops>
+                                            </paragraphStyle>
+                                        </attributes>
+                                    </fragment>
+                                    <fragment content="You can check Upcoming bookings which available offline.">
+                                        <attributes>
+                                            <color key="NSColor" red="0.25" green="0.25" blue="0.25" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <font key="NSFont" size="13" name="Helvetica"/>
+                                            <integer key="NSLigature" value="0"/>
+                                            <font key="NSOriginalFont" size="12" name="Helvetica"/>
+                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" defaultTabInterval="28.850000000000001" tighteningFactorForTruncation="0.0" allowsDefaultTighteningForTruncation="NO">
+                                                <tabStops>
+                                                    <textTab alignment="left" location="28.850000381469727">
+                                                        <options/>
+                                                    </textTab>
+                                                </tabStops>
+                                            </paragraphStyle>
+                                        </attributes>
+                                    </fragment>
+                                </attributedString>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="w8D-QB-Osm"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="IGp-zV-Bj1">
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aLw-u8-U1p">
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OIk-ex-49K">
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="50" id="dgq-lG-rSk"/>
+                                            <constraint firstAttribute="height" constant="26" id="p43-7D-dQD"/>
+                                        </constraints>
+                                        <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" image="disclosure-button"/>
+                                        <connections>
+                                            <action selector="prevWeekAction:" destination="C3Y-LN-xSP" eventType="touchUpInside" id="BzG-RX-phg"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S0J-J4-f4s">
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="26" id="M36-Uh-mgd"/>
+                                            <constraint firstAttribute="width" constant="50" id="ohL-Gf-ViS"/>
+                                        </constraints>
+                                        <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <state key="normal" image="disclosure-button"/>
+                                        <connections>
+                                            <action selector="nextWeekAction:" destination="C3Y-LN-xSP" eventType="touchUpInside" id="ETT-1g-eB6"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="59" id="3dx-yP-2xj"/>
+                                    <constraint firstItem="OIk-ex-49K" firstAttribute="centerY" secondItem="IGp-zV-Bj1" secondAttribute="centerY" id="Aoz-Es-pKo"/>
+                                    <constraint firstItem="aLw-u8-U1p" firstAttribute="centerY" secondItem="IGp-zV-Bj1" secondAttribute="centerY" id="Cki-Q3-yV2"/>
+                                    <constraint firstAttribute="trailing" secondItem="S0J-J4-f4s" secondAttribute="trailing" constant="8" id="a5F-PE-XNn"/>
+                                    <constraint firstItem="OIk-ex-49K" firstAttribute="leading" secondItem="IGp-zV-Bj1" secondAttribute="leading" constant="8" id="dgM-Y1-lYu"/>
+                                    <constraint firstItem="aLw-u8-U1p" firstAttribute="centerX" secondItem="IGp-zV-Bj1" secondAttribute="centerX" id="fkl-nC-MtM"/>
+                                    <constraint firstItem="S0J-J4-f4s" firstAttribute="centerY" secondItem="IGp-zV-Bj1" secondAttribute="centerY" id="mgM-bk-3iV"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="FSD-lL-6Bc" firstAttribute="leading" secondItem="77S-5F-Xc0" secondAttribute="leading" id="Cvf-PH-psx"/>
+                            <constraint firstItem="w8D-QB-Osm" firstAttribute="centerY" secondItem="77S-5F-Xc0" secondAttribute="centerY" id="LGb-S7-iBa"/>
+                            <constraint firstItem="IGp-zV-Bj1" firstAttribute="top" secondItem="DTB-PU-40E" secondAttribute="bottom" id="OFA-nm-zvl"/>
+                            <constraint firstItem="FSD-lL-6Bc" firstAttribute="top" secondItem="IGp-zV-Bj1" secondAttribute="bottom" id="Srw-1D-HCj"/>
+                            <constraint firstAttribute="trailing" secondItem="FSD-lL-6Bc" secondAttribute="trailing" id="WkX-ps-8hj"/>
+                            <constraint firstAttribute="trailing" secondItem="IGp-zV-Bj1" secondAttribute="trailing" id="YM0-wf-7I8"/>
+                            <constraint firstItem="gr5-wM-7fQ" firstAttribute="centerY" secondItem="77S-5F-Xc0" secondAttribute="centerY" id="aLy-0E-UwV"/>
+                            <constraint firstItem="3Fj-Zs-g5B" firstAttribute="top" secondItem="FSD-lL-6Bc" secondAttribute="bottom" id="h4n-Gz-FgG"/>
+                            <constraint firstItem="gr5-wM-7fQ" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="77S-5F-Xc0" secondAttribute="leading" constant="20" id="kGw-hK-6Ds"/>
+                            <constraint firstItem="IGp-zV-Bj1" firstAttribute="leading" secondItem="77S-5F-Xc0" secondAttribute="leading" id="mEG-5e-Qk5"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="gr5-wM-7fQ" secondAttribute="trailing" constant="20" id="q9a-ao-Hhy"/>
+                            <constraint firstItem="w8D-QB-Osm" firstAttribute="centerX" secondItem="77S-5F-Xc0" secondAttribute="centerX" id="tDW-Lc-Q6y"/>
+                            <constraint firstItem="gr5-wM-7fQ" firstAttribute="centerX" secondItem="77S-5F-Xc0" secondAttribute="centerX" id="woq-hX-8jo"/>
+                        </constraints>
+                    </view>
+                    <nil key="simulatedStatusBarMetrics"/>
+                    <connections>
+                        <outlet property="activityIndicator" destination="w8D-QB-Osm" id="RTx-Rt-BFg"/>
+                        <outlet property="collectionView" destination="FSD-lL-6Bc" id="6P2-Qc-KoV"/>
+                        <outlet property="datesIntervalLabel" destination="aLw-u8-U1p" id="j29-Lz-bxL"/>
+                        <outlet property="noCollectionLabel" destination="gr5-wM-7fQ" id="KOl-f9-rP0"/>
+                        <outlet property="prevWeekButton" destination="OIk-ex-49K" id="Dut-sO-5cj"/>
+                        <outlet property="topToolBar" destination="IGp-zV-Bj1" id="zNo-X1-OV0"/>
+                        <segue destination="1PP-kW-Qom" kind="presentation" identifier="addBooking" modalPresentationStyle="formSheet" id="BBz-o6-qNf"/>
+                        <segue destination="FHP-dU-f5r" kind="presentation" identifier="showBookingDetails-iPad" modalPresentationStyle="formSheet" id="epV-ON-dF4"/>
+                        <segue destination="DJc-vz-GLK" kind="show" identifier="showBookingDetails" id="j3n-k2-ktP"/>
+                        <segue destination="6VF-vl-IAC" kind="presentation" identifier="showBookingList-iPad" modalPresentationStyle="formSheet" id="yXe-eF-rPk"/>
+                        <segue destination="dAd-8Y-3xN" kind="show" identifier="showBookingList" id="37K-5f-usn"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="X8e-kD-ZOl" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2921" y="-298"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="disclosure-button" width="16" height="26"/>
+    </resources>
+    <color key="tintColor" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+</document>

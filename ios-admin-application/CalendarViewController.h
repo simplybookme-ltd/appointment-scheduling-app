@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol CalendarViewContainerChildController
 
 @property (readonly) SBGetBookingsFilter *getBookingsFilter;
+@property (nonatomic, copy) NSString *dataLoaderType;
 
 - (void)showAddBookingForm;
 - (void)filterDidChange:(SBGetBookingsFilter *)filter requiresReset:(BOOL)reset;

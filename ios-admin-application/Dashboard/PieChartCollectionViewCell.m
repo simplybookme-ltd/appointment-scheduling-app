@@ -21,7 +21,7 @@
 @implementation PieChartCollectionViewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [super awakeFromNib];
     slices = [NSMutableArray array];
     self.primaryValueLabel.layer.cornerRadius = self.primaryValueLabel.frame.size.width / 2.;
     self.primaryValueLabel.clipsToBounds = YES;

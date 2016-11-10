@@ -24,8 +24,7 @@ typedef NS_ENUM(NSInteger, SBACLRule) {
     SBACLRuleEditBookingStatus,
     SBACLRulePerformersFullListAccess,
     SBACLRuleServicesFullListAccess,
-    SBACLRuleDashboardAccess,
-    SBACLRulePendingBookingsAccess
+    SBACLRuleDashboardAccess
 };
                  
 @interface SBUser : NSObject

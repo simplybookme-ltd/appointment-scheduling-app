@@ -24,6 +24,8 @@
     copy.backgroundColor = [self.backgroundColor copyWithZone:zone];
     copy.stickyX = self.stickyX;
     copy.stickyY = self.stickyY;
+    copy.cornerRadius = self.cornerRadius;
+    copy.headlineHeight = self.headlineHeight;
     return copy;
 }
 

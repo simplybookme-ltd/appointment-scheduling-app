@@ -18,7 +18,7 @@
 @implementation HorizontalKeyValueCollectionViewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [super awakeFromNib];
     self.keyHorizontalConstraint = [NSLayoutConstraint constraintWithItem:self.keyLabel
                                                                 attribute:NSLayoutAttributeLeading
                                                                 relatedBy:NSLayoutRelationEqual

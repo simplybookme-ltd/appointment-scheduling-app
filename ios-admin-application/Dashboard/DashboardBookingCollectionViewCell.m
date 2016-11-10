@@ -22,7 +22,7 @@
 @implementation DashboardBookingCollectionViewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [super awakeFromNib];
     for (NSLayoutConstraint *constraint in self.contentView.constraints) {
         if (constraint.firstItem != self.disclosureButton && constraint.secondItem != self.disclosureButton) {
             constraint.active = NO;

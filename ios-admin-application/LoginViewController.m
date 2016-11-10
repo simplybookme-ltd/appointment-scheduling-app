@@ -192,6 +192,11 @@ NS_ENUM(NSInteger, LoginFormFields)
     }
 }
 
+- (IBAction)termsAction:(id)sender
+{
+    [self performSegueWithIdentifier:@"terms" sender:nil];
+}
+
 #pragma mark -
 
 - (ACHTextFieldTableViewCell *)dequeueTextFieldCellForTableView:(UITableView *)tableView indexPath:(NSIndexPath *)indexPath
@@ -305,19 +310,30 @@ NS_ENUM(NSInteger, LoginFormFields)
 - (void)sessionManager:(SBSessionManager *)manager didFailStartSessionWithError:(NSError *)error
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if ([error.domain isEqualToString:SBSessionManagerErrorDomain] && error.code == SBWrongCredentialsErrorCode) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
-                                                            message:[error message]
-                                                           delegate:self
-                                                  cancelButtonTitle:NSLS(@"OK",@"") otherButtonTitles:nil];
-            alert.tag = [self tagForTextFieldAtRowIndex:CompanyLoginFormField];
-            [alert show];
+        if ([error.domain isEqualToString:SBSessionManagerErrorDomain]) {
+            if (error.code == SBWrongCredentialsErrorCode || error.code == SBWrongCompanyLoginErrorCode) {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"Error", @"") message:[error message] preferredStyle:UIAlertControllerStyleAlert];
+                [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"OK",@"") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                    [[self textFieldForIndexPath:[NSIndexPath indexPathForRow:CompanyLoginFormField inSection:0]] becomeFirstResponder];
+                }]];
+                [self presentViewController:alert animated:YES completion:nil];
+            } else if (error.code == SBMobileAppPluginErrorCode) {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"Configuration required", @"") message:[error message] preferredStyle:UIAlertControllerStyleAlert];
+                NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"https://%@.secure.simplybook.me/settings/plugins/", error.userInfo[kSBSessionManagerCompanyLoginKey]]];
+                if (url && [[UIApplication sharedApplication] canOpenURL:url]) {
+                    [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"Cancel",@"") style:UIAlertActionStyleDefault handler:nil]];
+                    [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"Activate",@"") style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                        [[UIApplication sharedApplication] openURL:url];
+                    }]];
+                } else {
+                    [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"Cancel",@"") style:UIAlertActionStyleDefault handler:nil]];
+                }
+                [self presentViewController:alert animated:YES completion:nil];
+            }
         } else {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
-                                                            message:[error message]
-                                                           delegate:nil
-                                                  cancelButtonTitle:NSLS(@"OK",@"") otherButtonTitles:nil];
-            [alert show];
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"Error", @"") message:[error message] preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"OK",@"") style:UIAlertActionStyleDefault handler:nil]];
+            [self presentViewController:alert animated:YES completion:nil];
         }
         [self unblockFormAnimated:YES];
     });
@@ -335,10 +351,26 @@ NS_ENUM(NSInteger, LoginFormFields)
     else {
         [credentials removeFromKeychain:[FXKeychain defaultKeychain]];
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self performSegueWithIdentifier:@"loginToInitSegue" sender:nil];
-    });
-
+    if (![[SBSessionManager sharedManager] defaultSession]) {
+        [[SBSessionManager sharedManager] setDefaultSession:session];
+    }
+    
+    SBRequest *request = [session getCompanyParam:@"monday_is_first_day" callback:^(SBResponse<id> * _Nonnull response) {
+        if (response.result) {
+            /// 1 for sunday
+            /// 2 for monday
+            /// @see -[LSWeekView firstWeekday]
+            if ([response.result boolValue]) {
+                [session.settings setObject:@(2) forKey:kSBSettingsCalendarFirstWeekdayKey];
+            } else {
+                [session.settings setObject:@(1) forKey:kSBSettingsCalendarFirstWeekdayKey];
+            }
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self performSegueWithIdentifier:@"loginToInitSegue" sender:nil];
+        });
+    }];
+    [session performReqeust:request];
 }
 
 - (void)sessionManager:(SBSessionManager *)manager willEndSession:(SBSession *)session

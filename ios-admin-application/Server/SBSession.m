@@ -44,6 +44,8 @@
 #import "SBGetCompanyParamRequest.h"
 #import "SBGetGoogleCalendarBusyTimeRequest.h"
 #import "SBGetLocationsListRequest.h"
+#import "SBGetBookingCommentRequest.h"
+#import "SBSetBookingCommentRequest.h"
 
 #define SBSessionStorageKeyForCompanyLogin(companyLogin) ([NSString stringWithFormat:@"SBSessionStorageKey-%@", (companyLogin)])
 #define SBSessionStorageKeyForDomainString(companyLogin) ([NSString stringWithFormat:@"SBSessionStorageKeyForDomainString-%@", (companyLogin)])
@@ -71,7 +73,18 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     return [[SBSessionManager sharedManager] defaultSession];
 }
 
-- (instancetype)initWithUser:(SBUser *)user token:(NSString *)token domain:(NSString *)domain
++ (void)setDomainString:(NSString *)domainString companyLogin:(NSString *)companyLogin
+{
+    if (domainString && ![domainString isEqualToString:@""]) {
+        [SBRequestOperation setDomainString:domainString];
+        [[NSUserDefaults standardUserDefaults] setObject:domainString forKey:SBSessionStorageKeyForDomainString(companyLogin)];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    } else if ([[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForDomainString(companyLogin)]) {
+        [SBRequestOperation setDomainString:[[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForDomainString(companyLogin)]];
+    }
+}
+
+- (instancetype)initWithUser:(SBUser *)user token:(NSString *)token //domain:(NSString *)domain
 {
     NSAssert(user != nil, @"no user login");
     NSAssert(token != nil, @"no token");
@@ -80,15 +93,9 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     if (self) {
         self.token = token;
         self.user = user;
+        _settings = [[SBSettings alloc] initWithCompanyLogin:self.companyLogin userLogin:user.login];
         [self writeTokenToStorage];
         queue = [NSOperationQueue new];
-        if (domain && ![domain isEqualToString:@""]) {
-            [SBRequestOperation setDomainString:domain];
-            [[NSUserDefaults standardUserDefaults] setObject:domain forKey:SBSessionStorageKeyForDomainString(user.credentials.companyLogin)];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-        } else if ([[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForDomainString(user.credentials.companyLogin)]) {
-            [SBRequestOperation setDomainString:[[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForDomainString(user.credentials.companyLogin)]];
-        }
     }
     return self;
 }
@@ -237,16 +244,18 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
     request.delegate = self;
     request.callback = callback;
     request.startDate = startDate;
+    request.type = kSBGetWorkDaysTimesRequest_DefaultType;
     request.endDate = [startDate nextDayDate];
     return request;
 }
 
-- (SBRequest *)getWorkDaysTimesForStartDate:(NSDate *)startDate endDate:(NSDate *)endDate callback:(SBRequestCallback)callback
+- (SBRequest *)getWorkDaysTimesForStartDate:(NSDate *)startDate endDate:(NSDate *)endDate type:(NSString *)type callback:(SBRequestCallback)callback
 {
     SBGetWorkDaysTimesRequest *request = [[SBGetWorkDaysTimesRequest alloc] initWithToken:self.token comanyLogin:self.companyLogin];
     request.delegate = self;
     request.callback = callback;
     request.startDate = startDate;
+    request.type = type;
     request.endDate = endDate;
     return request;
 }
@@ -390,6 +399,26 @@ NSString * const kSBTimePeriodWeek = @"kSBTimePeriodWeek";
 - (SBRequest *)getLocationsWithCallback:(SBRequestCallback)callback
 {
     return [self buildRequest:[SBGetLocationsListRequest class] callback:callback];
+}
+
+- (SBRequest *)setBookingComment:(NSString *)comment bookingID:(NSString *)bookingID callback:(SBRequestCallback)callback
+{
+    NSParameterAssert(bookingID != nil && ![bookingID isEqualToString:@""]);
+    NSParameterAssert(comment != nil);
+    SBSetBookingCommentRequest *request = [[SBSetBookingCommentRequest alloc] initWithToken:self.token comanyLogin:self.companyLogin];
+    request.bookingID = bookingID;
+    request.comment = comment;
+    request.callback = callback;
+    return request;
+}
+
+- (SBRequest *)getBookingComment:(NSString *)bookingID callback:(SBRequestCallback)callback
+{
+    NSParameterAssert(bookingID != nil && ![bookingID isEqualToString:@""]);
+    SBGetBookingCommentRequest *request = [[SBGetBookingCommentRequest alloc] initWithToken:self.token comanyLogin:self.companyLogin];
+    request.bookingID = bookingID;
+    request.callback = callback;
+    return request;
 }
 
 #pragma mark - Statuses plugin

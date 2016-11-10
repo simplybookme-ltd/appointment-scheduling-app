@@ -114,6 +114,8 @@ NS_ENUM(NSInteger, ActionsSectionItems)
 }
 */
 
+#pragma mark - Actions
+
 - (void)togglePushNotificationsSwitcherAction:(UISwitch *)sender
 {
     SBSession *session = [SBSession defaultSession];
@@ -123,11 +125,11 @@ NS_ENUM(NSInteger, ActionsSectionItems)
             if (response.error) {
                 if (!response.canceled) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
-                                                                        message:NSLS(@"An error occurred during applying settings. Please try again later.",@"")
-                                                                       delegate:nil cancelButtonTitle:NSLS(@"OK",@"")
-                                                              otherButtonTitles:nil];
-                        [alert show];
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"Error",@"")
+                                                                                       message:NSLS(@"An error occurred during applying settings. Please try again later.",@"")
+                                                                                preferredStyle:UIAlertControllerStyleAlert];
+                        [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"OK",@"") style:UIAlertActionStyleDefault handler:nil]];
+                        [self presentViewController:alert animated:YES completion:nil];
                     });
                 }
             }
@@ -144,11 +146,11 @@ NS_ENUM(NSInteger, ActionsSectionItems)
             if (response.error) {
                 if (!response.canceled) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
-                                                                        message:NSLS(@"An error occurred during applying settings. Please try again later.",@"")
-                                                                       delegate:nil cancelButtonTitle:NSLS(@"OK",@"")
-                                                              otherButtonTitles:nil];
-                        [alert show];
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"Error",@"")
+                                                                                       message:NSLS(@"An error occurred during applying settings. Please try again later.",@"")
+                                                                                preferredStyle:UIAlertControllerStyleAlert];
+                        [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"OK",@"") style:UIAlertActionStyleDefault handler:nil]];
+                        [self presentViewController:alert animated:YES completion:nil];
                     });
                 }
             }
@@ -163,6 +165,11 @@ NS_ENUM(NSInteger, ActionsSectionItems)
     } else if (!deviceToken && sender.on) {
         [(AppDelegate *)[UIApplication sharedApplication].delegate registerForRemoteNotifications];
     }
+}
+
+- (IBAction)termsAction:(id)sender
+{
+    [self performSegueWithIdentifier:@"terms" sender:nil];
 }
 
 #pragma mark - Table view datesource/delegate
@@ -252,40 +259,54 @@ NS_ENUM(NSInteger, ActionsSectionItems)
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     if (indexPath.section == ActionsSection) {
         if (indexPath.row == LogoutActionItem) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"SimplyBook.me",@"")
-                                                            message:NSLS(@"Do you want to log out?",@"")
-                                                           delegate:self cancelButtonTitle:NSLS(@"NO",@"")
-                                                  otherButtonTitles:NSLS(@"YES",@""), nil];
-            [alert show];
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"SimplyBook.me",@"")
+                                                                           message:NSLS(@"Do you want to log out?",@"")
+                                                                    preferredStyle:UIAlertControllerStyleAlert];
+            [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"NO",@"") style:UIAlertActionStyleDefault handler:nil]];
+            [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"YES",@"") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                [self logoutAction];
+            }]];
+            [self presentViewController:alert animated:YES completion:nil];
         }
     }
 }
 
 #pragma mark - Alert view delegate
 
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+- (void)logoutAction
 {
-    if (buttonIndex != alertView.cancelButtonIndex) {
-        [[SBCache cache] flush];
-        [self removeObservers];
-        SBSessionManager *manager = [SBSessionManager sharedManager];
-        [manager endSession:manager.defaultSession];
-        
-        LSManagedObjectContext *context = [[LSManagedObjectContext alloc] init];
-        NSArray *objects = [context fetchObjectOfEntity:NSStringFromClass([LSPerformer class]) withPredicate:nil error:nil];
-        for (NSManagedObject *object in objects) {
-            [context deleteObject:object];
-        }
-        objects = [context fetchObjectOfEntity:NSStringFromClass([LSBooking class]) withPredicate:nil error:nil];
-        for (NSManagedObject *object in objects) {
-            [context deleteObject:object];
-        }
-        objects = [context fetchObjectOfEntity:NSStringFromClass([LSBookingStatus class]) withPredicate:nil error:nil];
-        for (NSManagedObject *object in objects) {
-            [context deleteObject:object];
-        }
-        [context save:nil];
+    [[SBCache cache] flush];
+    [self removeObservers];
+    
+    SBSessionManager *manager = [SBSessionManager sharedManager];
+    [[UIApplication sharedApplication] unregisterForRemoteNotifications];
+    NSString *deviceToke = [manager.defaultSession.settings objectForKey:kSBSettingsDeviceTokenKey];
+    if (deviceToke != nil && [deviceToke isKindOfClass:[NSString class]] && ![deviceToke isEqualToString:@""]) {
+        SBRequest *request = [manager.defaultSession deleteDeviceToken:deviceToke callback:^(SBResponse<id> * _Nonnull response) {
+            // nothing to do
+        }];
+        [manager.defaultSession performReqeust:request];
     }
+    [manager endSession:manager.defaultSession];
+    [self removeLocalStoredData];
+}
+
+- (void)removeLocalStoredData
+{
+    LSManagedObjectContext *context = [[LSManagedObjectContext alloc] init];
+    NSArray *objects = [context fetchObjectOfEntity:NSStringFromClass([LSPerformer class]) withPredicate:nil error:nil];
+    for (NSManagedObject *object in objects) {
+        [context deleteObject:object];
+    }
+    objects = [context fetchObjectOfEntity:NSStringFromClass([LSBooking class]) withPredicate:nil error:nil];
+    for (NSManagedObject *object in objects) {
+        [context deleteObject:object];
+    }
+    objects = [context fetchObjectOfEntity:NSStringFromClass([LSBookingStatus class]) withPredicate:nil error:nil];
+    for (NSManagedObject *object in objects) {
+        [context deleteObject:object];
+    }
+    [context save:nil];
 }
 
 @end

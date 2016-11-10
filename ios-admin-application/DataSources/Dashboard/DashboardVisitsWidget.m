@@ -68,7 +68,29 @@ NS_ENUM(NSUInteger, DashboardVisitsWidgetRows)
 - (NSInteger)currentWeekNumber
 {
     if (currentWeekNumber == -1) {
+        /// backend works with ISO 8601. this means that week of the year depends on weekday of 1 January:
+        /// "If 1 January is on a Monday, Tuesday, Wednesday or Thursday, it is in week 01. If 1 January is on a Friday,
+        /// Saturday or Sunday, it is in week 52 or 53 of the previous year."
+        /// @see https://en.wikipedia.org/wiki/ISO_8601#Week_dates
+        
+        NSDateComponents *components = [[NSDateComponents alloc] init];
+        components.day = 1;
+        components.month = 1;
+        components.year = [self.calendar component:NSCalendarUnitYear fromDate:[NSDate date]];
+        NSDate *firstDayInYear = [self.calendar dateFromComponents:components];
+        NSInteger weekday = [self.calendar component:NSCalendarUnitWeekday fromDate:firstDayInYear];
         currentWeekNumber = [self.calendar component:NSCalendarUnitWeekOfYear fromDate:[NSDate date]];
+        if (weekday == 1 || weekday == 6 || weekday == 7) { // Friday, Sturday or Sunday
+            if (currentWeekNumber == 1) {
+                /// take current week number as last week of previous year
+                components = [[NSDateComponents alloc] init];
+                components.day = -7;
+                NSDate *prevWeekdayDate = [self.calendar dateByAddingComponents:components toDate:firstDayInYear options:0];
+                currentWeekNumber = [self.calendar component:NSCalendarUnitWeekOfYear fromDate:prevWeekdayDate] + 1;
+            } else {
+                currentWeekNumber -= 1;
+            }
+        }
     }
     return currentWeekNumber;
 }
@@ -77,6 +99,7 @@ NS_ENUM(NSUInteger, DashboardVisitsWidgetRows)
 {
     if (!_calendar) {
         _calendar = [NSCalendar currentCalendar];
+        _calendar.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
     }
     return _calendar;
 }

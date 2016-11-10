@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDate *initialDate;
 @property (nonatomic, copy, nullable) NSDate *preferedStartTime;
 @property (nonatomic, copy, nullable) NSString *preferedPerformerID;
+@property (nonatomic, copy, nullable) NSString *preferedServiceID;
 @property (nonatomic, strong, nullable) SBBookingStatus *bookingStatus;
 @property (nonatomic, strong, nullable) NSArray <SBBookingInfoAdditionalField *> *additionalFieldsPreset;
 @property (nonatomic) NSUInteger timeFrameStep;

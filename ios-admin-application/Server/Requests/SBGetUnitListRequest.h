@@ -10,4 +10,9 @@
 
 @interface SBGetUnitListRequest : SBRequestOperation
 
+/// YES by default
+@property (nonatomic) BOOL visibleOnly;
+/// YES by default
+@property (nonatomic) BOOL asArray;
+
 @end

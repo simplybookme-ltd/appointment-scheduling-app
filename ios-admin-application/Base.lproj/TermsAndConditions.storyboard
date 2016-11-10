@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1108" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="4fp-Wh-Mk9">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Navigation Controller-->
+        <scene sceneID="mj2-wP-l3G">
+            <objects>
+                <navigationController id="4fp-Wh-Mk9" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="KgQ-Qv-3TE">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="Was-8U-NOb" kind="relationship" relationship="rootViewController" id="W67-Hk-nAq"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="J7b-V5-Sg0" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-441" y="156"/>
+        </scene>
+        <!--Terms & Conditions-->
+        <scene sceneID="Edr-Ky-vy3">
+            <objects>
+                <viewController title="Terms &amp; Conditions" automaticallyAdjustsScrollViewInsets="NO" id="Was-8U-NOb" customClass="TermsAndConditionsController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="V2s-0U-NW7"/>
+                        <viewControllerLayoutGuide type="bottom" id="4qY-7d-5ZC"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="kaf-XS-s1I">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <webView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oSN-5s-09g">
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <connections>
+                                    <outlet property="delegate" destination="Was-8U-NOb" id="Yr8-fB-cdB"/>
+                                </connections>
+                            </webView>
+                            <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="NPL-fz-XAP">
+                                <color key="color" red="0.1333333333" green="0.70588235290000001" blue="0.94117647059999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </activityIndicatorView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="4qY-7d-5ZC" firstAttribute="top" secondItem="oSN-5s-09g" secondAttribute="bottom" id="8WT-bn-aCY"/>
+                            <constraint firstItem="NPL-fz-XAP" firstAttribute="centerX" secondItem="kaf-XS-s1I" secondAttribute="centerX" id="FAD-OW-Lsr"/>
+                            <constraint firstItem="oSN-5s-09g" firstAttribute="top" secondItem="V2s-0U-NW7" secondAttribute="bottom" id="HlQ-N8-UmT"/>
+                            <constraint firstItem="oSN-5s-09g" firstAttribute="leading" secondItem="kaf-XS-s1I" secondAttribute="leading" id="TEW-FD-68i"/>
+                            <constraint firstAttribute="trailing" secondItem="oSN-5s-09g" secondAttribute="trailing" id="Vt0-kv-hnD"/>
+                            <constraint firstItem="NPL-fz-XAP" firstAttribute="centerY" secondItem="kaf-XS-s1I" secondAttribute="centerY" id="bEE-jG-ttO"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Terms &amp; Conditions" id="yU7-WA-wXa">
+                        <barButtonItem key="leftBarButtonItem" title="Close" id="2YX-1S-zNA">
+                            <connections>
+                                <action selector="closeAction:" destination="Was-8U-NOb" id="rjU-Qu-mO6"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="activityIndicator" destination="NPL-fz-XAP" id="vhu-1f-41W"/>
+                        <outlet property="webView" destination="oSN-5s-09g" id="Oz1-We-Xjc"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Luh-F9-fHk" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="471" y="155"/>
+        </scene>
+    </scenes>
+</document>

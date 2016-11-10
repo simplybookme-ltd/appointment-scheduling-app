@@ -10,8 +10,4 @@
 
 @implementation NewBookingPlaceholderCollectionViewCell
 
-- (void)awakeFromNib {
-    // Initialization code
-}
-
 @end

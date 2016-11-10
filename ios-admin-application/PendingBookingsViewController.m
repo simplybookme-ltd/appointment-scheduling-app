@@ -147,7 +147,7 @@
     if ([pendingBookings containsObject:bookingID]) {
         return;
     }
-    SBRequest *request = [[SBSession defaultSession] setBookingApproved:YES bookingID:bookingID callback:^(SBResponse<id> * _Nonnull response) {
+    SBRequest *request = [[SBSession defaultSession] setBookingApproved:approved bookingID:bookingID callback:^(SBResponse<id> * _Nonnull response) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [pendingRequests removeObject:response.requestGUID];
             [pendingBookings removeObject:bookingID];
@@ -203,7 +203,16 @@
             else {
                 NSUInteger pendingBookingsCount = (self.bookings ? self.bookings.count : NSNotFound);
                 @synchronized (self) {
-                    self.bookings = [NSMutableArray arrayWithArray:[response.result sortedArrayUsingComparator:^NSComparisonResult(NSDictionary * _Nonnull obj1, NSDictionary * _Nonnull obj2) {
+                    SBUser *user = [SBSession defaultSession].user;
+                    NSAssert(user != nil, @"no user found");
+                    NSArray *bookings = response.result;
+                    if (![user hasAccessToACLRule:SBACLRuleEditBooking] && [user hasAccessToACLRule:SBACLRuleEditOwnBooking]) {
+                        NSIndexSet *indexes = [bookings indexesOfObjectsPassingTest:^BOOL(NSDictionary * obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                            return [obj[@"unit_group_id"] isEqualToString:user.associatedPerformerID];
+                        }];
+                        bookings = [bookings objectsAtIndexes:indexes];
+                    }
+                    self.bookings = [NSMutableArray arrayWithArray:[bookings sortedArrayUsingComparator:^NSComparisonResult(NSDictionary * _Nonnull obj1, NSDictionary * _Nonnull obj2) {
                         return [obj1[@"start_date"] compare:obj2[@"start_date"]];
                     }]];
                 }

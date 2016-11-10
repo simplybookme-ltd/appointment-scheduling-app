@@ -18,7 +18,7 @@
 @implementation VerticalKeyValueCollectionViewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [super awakeFromNib];
     self.keyLabelVerticalConstraint = [NSLayoutConstraint constraintWithItem:self.keyLabel
                                                                    attribute:NSLayoutAttributeTop
                                                                    relatedBy:NSLayoutRelationEqual

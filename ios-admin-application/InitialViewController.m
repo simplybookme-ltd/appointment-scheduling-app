@@ -44,6 +44,7 @@
     else {
         [[SBSessionManager sharedManager] addObserver:self];
         [(AppDelegate *)[UIApplication sharedApplication].delegate registerForRemoteNotifications];
+        [self performSelector:@selector(showMainScreen) withObject:nil afterDelay:.4];
     }
 }
 
@@ -56,6 +57,11 @@
 - (void)showLoginScreen
 {
     [self performSegueWithIdentifier:@"loginSegue" sender:nil];
+}
+
+- (void)showMainScreen
+{
+    [self performSegueWithIdentifier:@"mainSegue" sender:nil];
 }
 
 #pragma mark -
@@ -100,10 +106,23 @@
     if (![[SBSessionManager sharedManager] defaultSession]) {
         [[SBSessionManager sharedManager] setDefaultSession:session];
     }
-    [(AppDelegate *)[UIApplication sharedApplication].delegate registerForRemoteNotifications];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self performSegueWithIdentifier:@"mainSegue" sender:nil];
-    });
+    SBRequest *request = [session getCompanyParam:@"monday_is_first_day" callback:^(SBResponse<id> * _Nonnull response) {
+        if (response.result) {
+            /// 1 for sunday
+            /// 2 for monday
+            /// @see -[LSWeekView firstWeekday]
+            if ([response.result boolValue]) {
+                [session.settings setObject:@(2) forKey:kSBSettingsCalendarFirstWeekdayKey];
+            } else {
+                [session.settings setObject:@(1) forKey:kSBSettingsCalendarFirstWeekdayKey];
+            }
+        }
+        [(AppDelegate *)[UIApplication sharedApplication].delegate registerForRemoteNotifications];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self performSegueWithIdentifier:@"mainSegue" sender:nil];
+        });
+    }];
+    [session performReqeust:request];
 }
 
 @end

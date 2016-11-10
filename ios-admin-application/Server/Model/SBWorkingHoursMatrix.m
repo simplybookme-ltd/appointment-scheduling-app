@@ -109,13 +109,13 @@ NSString * const kSBWorkingHoursMatrixDefaultRecordID = @"default";
     self = [super init];
     if (self) {
         records = [NSMutableDictionary dictionary];
+        baseDate = selectedDate;
         [data enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSDictionary <NSString *, id> *obj, BOOL *stop) {
             /// key = [performer_id_string|default]
             NSString *dateString = [[NSDateFormatter sb_serverDateFormatter] stringFromDate:selectedDate];
             if (!obj[dateString]) {
                 return;
             }
-            baseDate = selectedDate;
             WorkHoursData *record = [WorkHoursData new];
             NSDictionary *recordData = obj[dateString];
             record.dayOff = [recordData[@"is_day_off"] boolValue];

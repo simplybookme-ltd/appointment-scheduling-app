@@ -29,7 +29,6 @@ NSDictionary<NSNumber *, NSNumber *> *ACLRulesRolesMap(NSString *ACLRole) {
                                      @(SBACLRulePerformersFullListAccess): @YES,
                                      @(SBACLRuleServicesFullListAccess): @YES,
                                      @(SBACLRuleDashboardAccess): @YES,
-                                     @(SBACLRulePendingBookingsAccess): @YES
                                      },
                              kSBACLRoleResellerAdmin: @{
                                      @(SBACLRuleCreateBooking): @YES,
@@ -39,17 +38,15 @@ NSDictionary<NSNumber *, NSNumber *> *ACLRulesRolesMap(NSString *ACLRole) {
                                      @(SBACLRulePerformersFullListAccess): @YES,
                                      @(SBACLRuleServicesFullListAccess): @YES,
                                      @(SBACLRuleDashboardAccess): @YES,
-                                     @(SBACLRulePendingBookingsAccess): @YES
                                      },
                              kSBACLRoleSeniorEmployee: @{
                                      @(SBACLRuleCreateBooking): @YES,
-                                     @(SBACLRuleEditBooking): @NO,
+                                     @(SBACLRuleEditBooking): @YES,
                                      @(SBACLRuleEditOwnBooking): @YES,
                                      @(SBACLRuleEditBookingStatus): @YES,
                                      @(SBACLRulePerformersFullListAccess): @YES,
                                      @(SBACLRuleServicesFullListAccess): @YES,
                                      @(SBACLRuleDashboardAccess): @NO,
-                                     @(SBACLRulePendingBookingsAccess): @YES
                                      },
                              kSBACLRoleJuniorEmployee: @{
                                      @(SBACLRuleCreateBooking): @YES,
@@ -59,7 +56,6 @@ NSDictionary<NSNumber *, NSNumber *> *ACLRulesRolesMap(NSString *ACLRole) {
                                      @(SBACLRulePerformersFullListAccess): @NO,
                                      @(SBACLRuleServicesFullListAccess): @NO,
                                      @(SBACLRuleDashboardAccess): @NO,
-                                     @(SBACLRulePendingBookingsAccess): @NO
                                      },
                              kSBACLRoleViewer: @{
                                      @(SBACLRuleCreateBooking): @NO,
@@ -69,7 +65,6 @@ NSDictionary<NSNumber *, NSNumber *> *ACLRulesRolesMap(NSString *ACLRole) {
                                      @(SBACLRulePerformersFullListAccess): @YES,
                                      @(SBACLRuleServicesFullListAccess): @YES,
                                      @(SBACLRuleDashboardAccess): @NO,
-                                     @(SBACLRulePendingBookingsAccess): @NO
                                      },
                              };
     });
@@ -107,7 +102,7 @@ NSDictionary<NSNumber *, NSNumber *> *ACLRulesRolesMap(NSString *ACLRole) {
         self.lastName = dict[@"lastname"];
         self.phone = dict[@"phone"];
         self.ACLRole = dict[@"group"];
-        self.blocked = [[NSNumber numberWithInt:[dict[@"is_blocked"] intValue]] boolValue];
+        self.blocked = [[NSNumber numberWithInteger:[dict[@"is_blocked"] integerValue]] boolValue];
         self.lastAccessDate = [[NSDateFormatter sb_serverDateTimeFormatter] dateFromString:SAFE_KEY(dict, @"last_access_time")];
         self.associatedPerformerID = SAFE_KEY(dict, @"unit_group_id");
     }

@@ -24,7 +24,7 @@
 @implementation PendingBookingCollectionViewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [super awakeFromNib];
     initialConstant = self.optionsLayoutConstraint.constant;
     self.optionsLayoutConstraint.constant = -(self.viewOptionButton.frame.size.width * 3 + initialConstant * 3);
     self.optionsButton.hidden = NO;

@@ -18,6 +18,7 @@
 #import "SBBookingStatusesCollection.h"
 #import "SBPerformer.h"
 #import "SBCollection.h"
+#import "NSDate+TimeManipulation.h"
 
 NSString * const _Nonnull kCalendarDataSourceTimeframeElementKind = @"kCalendarDataSourceTimeframeElementKind";
 NSString * const _Nonnull kCalendarDataSourceGoogleBusyTimeElementKind = @"kCalendarDataSourceGoogleBusyTimeElementKind";
@@ -33,6 +34,7 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
 @property (nonatomic, weak) UICollectionView *collectionView;
 @property (nonatomic, strong, readwrite, nullable) SBBookingStatusesCollection *statuses;
 @property (nonatomic, strong, readwrite) NSMutableDictionary <NSObject *, NSArray<NSDictionary *> *> * _googleCalendarBusyTime;
+@property (nonatomic, strong) NSMutableArray <NSObject<CalendarBookingPresenter> *> *presenters;
 
 @end
 
@@ -42,6 +44,7 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
 {
     self = [super init];
     if (self) {
+        self.presenters = [NSMutableArray array];
         self._googleCalendarBusyTime = [NSMutableDictionary dictionary];
     }
     return self;
@@ -86,6 +89,19 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
 
 #pragma mark -
 
+- (void)addPresenter:(NSObject <CalendarBookingPresenter> *)presenter
+{
+    NSParameterAssert(presenter != nil);
+    [self.presenters addObject:presenter];
+}
+
+- (void)resetPresenters
+{
+    [self.presenters removeAllObjects];
+}
+
+#pragma mark -
+
 - (void)setGoogleCalendarBusyTime:(NSArray<NSDictionary *> * _Nonnull)googleCalendarBusyTime forSectionID:(NSObject<NSCopying> *)sectionID
 {
     NSParameterAssert(googleCalendarBusyTime != nil);
@@ -100,6 +116,33 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
     NSAssert(workingHoursMatrix.start != nil, @"invalid working hours. no start time.");
     NSAssert(workingHoursMatrix.end != nil, @"invalid working hours. no end time.");
     _workingHoursMatrix = workingHoursMatrix;
+    if (self.sections != nil) {
+        [self correctSectionsStartTimeUsingWorkingHoursMatrix];
+    }
+}
+
+- (void)setSections:(NSArray<CalendarSectionDataSource *> *)sections
+{
+    NSParameterAssert(sections != nil);
+    _sections = sections;
+    if (self.workingHoursMatrix != nil) {
+        [self correctSectionsStartTimeUsingWorkingHoursMatrix];
+    }
+}
+
+- (void)correctSectionsStartTimeUsingWorkingHoursMatrix {
+    NSAssert(self.sections != nil, @"Data source not configured");
+    NSAssert(self.workingHoursMatrix != nil, @"Data source not configured");
+    NSDate *start = self.workingHoursMatrix.start;
+    for (CalendarSectionDataSource *section in _sections) {
+        section.startDate = [section.startDate dateByAssigningTimeComponentsFromDate:start];
+        if ([self.calendar component:NSCalendarUnitMinute fromDate:start] != 0) {
+            NSDateComponents *components = [[NSDateComponents alloc] init];
+            components = [self.calendar components:NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay | NSCalendarUnitHour fromDate:section.startDate];
+            components.minute = 0;
+            section.startDate = [self.calendar dateFromComponents:components];
+        }
+    }
 }
 
 - (void)setBookings:(nonnull NSArray <SBBookingObject *> *)bookings sortingStrategy:(nullable NSComparator)sortingStrategy;
@@ -110,12 +153,6 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
         [section resetBookings];
         [section addBookings:_bookings];
     }];
-}
-
-- (void)setStatusesCollection:(SBBookingStatusesCollection *)statuses
-{
-    NSParameterAssert(statuses != nil);
-    self.statuses = statuses;
 }
 
 - (void)configureCollectionView:(nonnull UICollectionView *)collectionView
@@ -197,18 +234,9 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
     if ([obj isKindOfClass:[SBBooking class]]) {
         SBBooking *booking = (SBBooking *)obj;
         BookingCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
-        UIColor *bgColor = [UIColor sb_defaultBookingColor];
-        if (self.performers[booking.performerID].color) {
-            bgColor = [UIColor colorFromHEXString:self.performers[booking.performerID].color];
-        }
-        if (booking.statusID) {
-            SBBookingStatus *status = self.statuses[booking.statusID];
-            if (status) {
-                bgColor = [UIColor colorFromHEXString:status.HEXColor];
-            }
-        }
-        else if (self.statuses.count > 0) {
-            bgColor = [UIColor colorFromHEXString:self.statuses.defaultStatus.HEXColor];
+        UIColor *bgColor = nil;
+        for (NSObject <CalendarBookingPresenter> *presenter in self.presenters) {
+            bgColor = [presenter backgroundColorForBooking:booking];
         }
         UIColor *statusColor = nil;
         if (booking.paymentStatus) {
@@ -222,8 +250,8 @@ NSString * const _Nonnull kCalendarListSectionHeaderReuseIdentifier = @"kCalenda
         [cell setBookingColor:bgColor canceled:![booking.isConfirmed boolValue]]; /// set color before text!
         [cell setTimeText:[self.intervalFormatter stringFromDate:booking.startDate toDate:booking.endDate]
                    client:booking.clientName
-                performer:([self.traitCollection isWideLayout] ? nil : booking.performerName)
-                  setvice:booking.eventTitle
+                performer:([self.traitCollection isWideLayout] && !self.displayPerformerForWideLayout ? nil : booking.performerName)
+                  setvice:([self.traitCollection isWideLayout] && !self.displayServiceForWideLayout ? nil : booking.eventTitle)
                stausColor:statusColor];
         return cell;
     }

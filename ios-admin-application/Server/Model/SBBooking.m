@@ -27,6 +27,7 @@
         self.performerName = SAFE_KEY(dict, @"unit");
         self.performerID = SAFE_KEY(dict, @"unit_id");
         self.eventTitle = SAFE_KEY(dict, @"event");
+        self.eventID = SAFE_KEY(dict, @"event_id");
         self.isConfirmed = @([SAFE_KEY(dict, @"is_confirm") isEqualToString:@"1"]);
         self.statusID = SAFE_KEY(dict, @"status");
         self.paymentStatus = SAFE_KEY(dict, @"payment_status");

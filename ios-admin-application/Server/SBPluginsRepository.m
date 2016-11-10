@@ -39,6 +39,9 @@ NSString * const kSBPluginRepositoryServiceCategoriesPlugin = @"event_category";
 /// @see http://wiki.simplybook.me/index.php/Plugins#Google_calendar_sync_plugin
 NSString * const kSBPluginRepositoryGoogleCalendarSyncPlugin = @"google_calendar_export";
 
+/// @see http://wiki.simplybook.me/index.php/Plugins#Mobile_application
+NSString * const kSBPluginRepositoryMobileApplicationPlugin = @"mobile_app_backend";
+
 @implementation SBPluginsRepository
 {
     NSMutableDictionary <NSString *, NSNumber *> *repository;

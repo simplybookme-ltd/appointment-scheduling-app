@@ -22,7 +22,7 @@
 @implementation LSWeekCollectionViewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [super awakeFromNib];
     self.day1Label.textColor = [UIColor whiteColor];
     self.weekday1Label.textColor = [UIColor whiteColor];
     self.marker1View.backgroundColor = [UIColor clearColor];

@@ -13,6 +13,7 @@
 
 extern NSString *const SBSessionManagerErrorDomain;
 extern NSString *const kSBSessionManagerDidEndSessionNotification;
+extern NSString *const kSBSessionManagerCompanyLoginKey;
 
 typedef NS_ENUM(NSInteger, SBSessionManagerErrorCodes)
 {
@@ -21,6 +22,7 @@ typedef NS_ENUM(NSInteger, SBSessionManagerErrorCodes)
     SBUserBlockedErrorCode,
     SBWrongCompanyLoginErrorCode,
     SBInvalidAPIKeyErrorCode,
+    SBMobileAppPluginErrorCode,
     SBHIPAAErrorCode
 };
 

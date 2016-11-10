@@ -25,6 +25,7 @@
 @property (nonatomic, copy, nullable) NSDate *startTime;
 @property (nonatomic, copy, nullable) NSDate *endTime;
 @property (nonatomic) NSInteger timeframe;
+@property (nonatomic, copy, nullable) NSString *comment;
 
 - (void)setEventID:(nullable NSString *)eventID withDuration:(NSUInteger)duration;
 - (BOOL)isDateRangeValid;

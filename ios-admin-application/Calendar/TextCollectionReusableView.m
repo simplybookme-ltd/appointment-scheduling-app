@@ -10,8 +10,4 @@
 
 @implementation TextCollectionReusableView
 
-- (void)awakeFromNib {
-    // Initialization code
-}
-
 @end

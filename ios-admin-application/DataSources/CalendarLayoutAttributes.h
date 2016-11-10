@@ -14,6 +14,10 @@
 @property (nonatomic) BOOL stickyX;
 @property (nonatomic) BOOL stickyY;
 @property (nonatomic) CGFloat cornerRadius;
+// this property required to make correction for bookings
+// which extends to next day over closing hours.
+// @see -[BookingCollectionViewCell applyLayoutAttributes:]
+@property (nonatomic) CGFloat headlineHeight;
 
 @end
 

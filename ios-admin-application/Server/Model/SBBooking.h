@@ -34,6 +34,7 @@ typedef NSObject <SBBookingProtocol> SBBookingObject;
 @property (nonatomic, strong) NSString *performerName;
 @property (nonatomic, strong) NSString *performerID;
 @property (nonatomic, strong) NSString *eventTitle;
+@property (nonatomic, strong) NSString *eventID;
 @property (nonatomic, strong) NSNumber *isConfirmed;
 @property (nonatomic, strong) NSString *statusID;
 @property (nonatomic, strong) NSString *paymentStatus;

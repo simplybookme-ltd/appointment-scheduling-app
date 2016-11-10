@@ -11,11 +11,15 @@
 #import "SBGetServiceUrlRequest.h"
 #import "SBGetCurrentUserDetailsRequest.h"
 #import "SBUser.h"
+#import "SBRequestsGroup.h"
+#import "SBIsPluginActivatedRequest.h"
+#import "SBPluginsRepository.h"
 
 #define SBSessionStorageKeyForCompanyLogin(companyLogin) ([NSString stringWithFormat:@"SBSessionStorageKey-%@", (companyLogin)])
 
 NSString *const SBSessionManagerErrorDomain = @"SBSessionManagerErrorDomain";
 NSString *const kSBSessionManagerDidEndSessionNotification = @"kSBSessionManagerDidEndSessionNotification";
+NSString *const kSBSessionManagerCompanyLoginKey = @"kSBSessionManagerCompanyLoginKey";
 
 NSString *const SBLoginServiceError_WrongCompanyResponseMessage = @"company does not exist";
 NSString *const SBLoginServiceError_WrongAPIKey = @"wrong api key";
@@ -23,7 +27,7 @@ NSString *const SBLoginServiceError_InvalidCredentials = @"user with this login 
 NSString *const SBLoginServiceError_UserIsBlocked = @"user is blocked";
 NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use this application when hipaa plugin is enabled";
 
-@interface SBSessionManager ()
+@interface SBSessionManager () <SBRequestDelegate>
 
 @property (nonatomic, strong) SBSession *defaultSession;
 @property (nonatomic, strong) NSMutableArray *observers;
@@ -82,9 +86,14 @@ NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use th
                                            NSUnderlyingErrorKey: response.error};
                 error = [NSError errorWithDomain:SBSessionManagerErrorDomain
                                             code:errorCode userInfo:userInfo];
+                [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+                    [observer sessionManager:self didFailStartSessionWithError:error];
+                }];
             }
         } else {
             NSString *domainString = response.result;
+            [SBSession setDomainString:domainString companyLogin:sessionCredentials.companyLogin];
+            
             SBGetUserTokenRequest *request = [[SBGetUserTokenRequest alloc] initWithComanyLogin:sessionCredentials.companyLogin];
             request.login = sessionCredentials.userLogin;
             request.password = sessionCredentials.password;
@@ -100,8 +109,8 @@ NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use th
                     } else if (response.error) {
                         error = response.error;
                     }
-                    [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                        [object sessionManager:self didFailStartSessionWithError:error];
+                    [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+                        [observer sessionManager:self didFailStartSessionWithError:error];
                     }];
                 } else if ([response isEqual:[SBNullResponse nullResponse]]
                            || !response.result
@@ -110,34 +119,24 @@ NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use th
                     NSError *managerError = [NSError errorWithDomain:SBSessionManagerErrorDomain
                                                                 code:SBNoTokenErrorCode
                                                             userInfo:@{NSLocalizedDescriptionKey: @"No auth token received from server."}];
-                    [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                        [object sessionManager:self didFailStartSessionWithError:managerError];
+                    [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+                        [observer sessionManager:self didFailStartSessionWithError:managerError];
                     }];
                 } else {
                     NSString *token = response.result;
-                    SBGetCurrentUserDetailsRequest *request = [[SBGetCurrentUserDetailsRequest alloc] initWithToken:token comanyLogin:sessionCredentials.companyLogin];
-                    request.callback = ^(SBResponse *response) {
-                        if (response.error) {
-                            [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                                [object sessionManager:self didFailStartSessionWithError:response.error];
+                    [self validateSessionWithToken:token sessionCredentials:sessionCredentials callback:^(SBUser *user, NSError *error) {
+                        if (error) {
+                            [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+                                [observer sessionManager:self didFailStartSessionWithError:error];
                             }];
                         } else {
-                            SBUser *user = (SBUser *)response.result;
-                            if ([user isBlocked]) {
-                                NSError *error = [NSError errorWithDomain:SBSessionManagerErrorDomain code:SBUserBlockedErrorCode userInfo:@{}];
-                                [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                                    [object sessionManager:self didFailStartSessionWithError:error];
-                                }];
-                            } else {
-                                user.credentials = sessionCredentials;
-                                SBSession *session = [[SBSession alloc] initWithUser:user token:token domain:domainString];
-                                [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                                    [object sessionManager:self didStartSession:session];
-                                }];
-                            }
+                            user.credentials = sessionCredentials;
+                            SBSession *session = [[SBSession alloc] initWithUser:user token:token];
+                            [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+                                [observer sessionManager:self didStartSession:session];
+                            }];
                         }
-                    };
-                    [self.authQueue addOperation:request];
+                    }];
                 }
             };
             [self.authQueue addOperation:request];
@@ -152,43 +151,23 @@ NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use th
     NSParameterAssert(![sessionCredentials.companyLogin isEqualToString:@""]);
     NSString *token = [[NSUserDefaults standardUserDefaults] objectForKey:SBSessionStorageKeyForCompanyLogin(sessionCredentials.companyLogin)];
     if (token) {
-        SBGetCurrentUserDetailsRequest *request = [[SBGetCurrentUserDetailsRequest alloc] initWithToken:token comanyLogin:sessionCredentials.companyLogin];
-        request.callback = ^(SBResponse *response) {
-            if (response.error) {
-                if (response.error.code == SBInvalidAuthTokenErrorCode) {
-                    [self startSessionWithCredentials:sessionCredentials];
-                    return;
-                }
-                [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                    if ([object respondsToSelector:@selector(sessionManager:didFailRestoreSessionWithError:)]) {
-                        [object sessionManager:self didFailRestoreSessionWithError:response.error];
-                    }
-                }];
-            } else {
-                SBUser *user = (SBUser *)response.result;
-                if ([user isBlocked]) {
-                    NSError *error = [NSError errorWithDomain:SBSessionManagerErrorDomain code:SBUserBlockedErrorCode userInfo:@{}];
-                    [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                        if ([object respondsToSelector:@selector(sessionManager:didFailRestoreSessionWithError:)]) {
-                            [object sessionManager:self didFailRestoreSessionWithError:error];
-                        }
-                    }];
-                } else {
-                    user.credentials = sessionCredentials;
-                    SBSession *session = [[SBSession alloc] initWithUser:user token:token domain:nil];
-                    [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-                        if ([object respondsToSelector:@selector(sessionManager:didRestoreSession:)]) {
-                            [object sessionManager:self didRestoreSession:session];
-                        }
-                    }];
-                }
+        [self validateSessionWithToken:token sessionCredentials:sessionCredentials callback:^(SBUser *user, NSError *error) {
+            if (error.code == SBInvalidAuthTokenErrorCode) {
+                [self startSessionWithCredentials:sessionCredentials];
+                return;
             }
-        };
-        [self.authQueue addOperation:request];
+            user.credentials = sessionCredentials;
+            SBSession *session = [[SBSession alloc] initWithUser:user token:token];
+            [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+                if ([observer respondsToSelector:@selector(sessionManager:didRestoreSession:)]) {
+                    [observer sessionManager:self didRestoreSession:session];
+                }
+            }];
+        }];
     } else {
-        [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-            if ([object respondsToSelector:@selector(sessionManager:didFailRestoreSessionWithError:)]) {
-                [object sessionManager:self didFailRestoreSessionWithError:nil];
+        [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+            if ([observer respondsToSelector:@selector(sessionManager:didFailRestoreSessionWithError:)]) {
+                [observer sessionManager:self didFailRestoreSessionWithError:nil];
             }
         }];
     }
@@ -196,15 +175,16 @@ NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use th
 
 - (void)startSessionWithUser:(SBUser *)user token:(NSString *)token domain:(NSString *)serverDomain
 {
-    SBSession *session = [[SBSession alloc] initWithUser:user token:token domain:serverDomain];
-    [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> object, NSUInteger index, BOOL *stop) {
-        [object sessionManager:self didStartSession:session];
+    [SBSession setDomainString:serverDomain companyLogin:user.credentials.companyLogin];
+    SBSession *session = [[SBSession alloc] initWithUser:user token:token];
+    [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+        [observer sessionManager:self didStartSession:session];
     }];
 }
 
 - (void)endSession:(SBSession *)session
 {
-    [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+    [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
         [observer sessionManager:self willEndSession:session];
     }];
     NSString *companyLogin = session.user.credentials.companyLogin;
@@ -215,11 +195,61 @@ NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use th
     if (session == self.defaultSession) {
         self.defaultSession = nil;
     }
-    [self.observers enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
+    [self enumerateObserversUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step) {
         [observer sessionManager:self didEndSessionForCompany:companyLogin user:userLogin];
     }];
     [[NSNotificationCenter defaultCenter] postNotificationName:kSBSessionManagerDidEndSessionNotification
                                                         object:nil userInfo:@{@"company" : companyLogin ? companyLogin : @"(null)", @"user" : userLogin ? userLogin : @"(null)"}];
+}
+
+- (void)validateSessionWithToken:(NSString *)token sessionCredentials:(SBSessionCredentials *)sessionCredentials callback:(void (^)(SBUser *user, NSError *error))callback
+{
+    NSParameterAssert(token != nil && ![token isEqualToString:@""]);
+    NSParameterAssert(sessionCredentials != nil && sessionCredentials.companyLogin != nil && ![sessionCredentials.companyLogin isEqualToString:@""]);
+    SBRequestsGroup *group = [[SBRequestsGroup alloc] init];
+    
+    __block SBUser *user;
+    SBGetCurrentUserDetailsRequest *getUserDetailsRequest = [[SBGetCurrentUserDetailsRequest alloc] initWithToken:token comanyLogin:sessionCredentials.companyLogin];
+    getUserDetailsRequest.callback = ^(SBResponse *response) {
+        user = (SBUser *)response.result;
+    };
+    getUserDetailsRequest.cachePolicy = SBIgnoreCachePolicy;
+    [group addRequest:getUserDetailsRequest];
+    
+    __block BOOL pluginActivated = NO;
+    SBIsPluginActivatedRequest *pluginStatusRequest = [[SBIsPluginActivatedRequest alloc] initWithToken:token comanyLogin:sessionCredentials.companyLogin];
+    pluginStatusRequest.pluginName = kSBPluginRepositoryMobileApplicationPlugin;
+    pluginStatusRequest.callback = ^(SBResponse *response) {
+        pluginActivated = (response.result && [response.result respondsToSelector:@selector(boolValue)] ? [response.result boolValue] : NO);
+    };
+    pluginStatusRequest.cachePolicy = SBIgnoreCachePolicy;
+    [group addRequest:pluginStatusRequest];
+    
+    group.callback = ^(SBResponse *response) {
+        if (response.error) {
+            callback(nil, response.error);
+        } else {
+            if ([user isBlocked]) {
+                NSError *error = [NSError errorWithDomain:SBSessionManagerErrorDomain code:SBUserBlockedErrorCode
+                                                 userInfo:@{kSBSessionManagerCompanyLoginKey: sessionCredentials.companyLogin}];
+                callback(nil, error);
+            } else if (pluginActivated == NO) {
+                NSError *error = [NSError errorWithDomain:SBSessionManagerErrorDomain code:SBMobileAppPluginErrorCode
+                                                 userInfo:@{kSBSessionManagerCompanyLoginKey: sessionCredentials.companyLogin}];
+                callback(nil, error);
+            } else {
+                callback(user, nil);
+            }
+        }
+    };
+    group.delegate = self;
+    [self.authQueue addOperation:group];
+    [self.authQueue addOperations:group.dependencies waitUntilFinished:NO];
+}
+
+- (BOOL)request:(SBRequest *)request didFinishWithResponse:(SBResponse *)response
+{
+    return YES;
 }
 
 - (void)addObserver:(NSObject<SBSessionManagerDelegateObserver> *)observer
@@ -235,6 +265,15 @@ NSString *const SBLoginServiceError_HIPAAGuard = @"you are not allowed to use th
 - (void)removeObserver:(NSObject<SBSessionManagerDelegateObserver> *)observer
 {
     [self.observers removeObject:observer];
+}
+
+/// enumerate immutable copy to prevent adding/removing observers during enumeration
+- (void)enumerateObserversUsingBlock:(void (^)(id<SBSessionManagerDelegateObserver> observer, NSUInteger index, BOOL *step))block
+{
+    NSArray *safeCopy = [[NSArray alloc] initWithArray:self.observers];
+    [safeCopy enumerateObjectsUsingBlock:^(id<SBSessionManagerDelegateObserver> observer, NSUInteger idx, BOOL * _Nonnull stop) {
+        block(observer, idx, stop);
+    }];
 }
 
 @end

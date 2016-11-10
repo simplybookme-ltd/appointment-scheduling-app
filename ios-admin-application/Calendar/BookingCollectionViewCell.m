@@ -8,18 +8,21 @@
 
 #import "BookingCollectionViewCell.h"
 #import "UIColor+SimplyBookColors.h"
+#import "CalendarLayoutAttributes.h"
 
 @interface BookingCollectionViewCell ()
 
 @property (nonatomic, strong, nullable) UIColor *color;
 @property (nonatomic, strong, nullable) CALayer *statusLayer;
 @property (nonatomic, weak, nullable) IBOutlet NSLayoutConstraint *textLabelTopLayoutConstraint;
+@property (nonatomic, strong) IBOutlet NSLayoutConstraint *topConstraint;
+
 @end
 
 @implementation BookingCollectionViewCell
 
 - (void)awakeFromNib {
-    // Initialization code
+    [super awakeFromNib];
     self.layer.masksToBounds = NO;
 }
 
@@ -118,6 +121,18 @@
     }
     self.statusLayer.backgroundColor = self.color.CGColor;
     self.statusLayer.frame = CGRectMake(CGRectGetMinX(self.bounds), CGRectGetMinY(self.bounds), 3, CGRectGetHeight(self.bounds));
+}
+
+- (void)applyLayoutAttributes:(UICollectionViewLayoutAttributes *)layoutAttributes
+{
+    [super applyLayoutAttributes:layoutAttributes];
+    if (layoutAttributes.frame.origin.y < 0) {
+        self.topConstraint.constant = -layoutAttributes.frame.origin.y + self.topConstraint.constant;
+        if ([layoutAttributes isKindOfClass:[CalendarLayoutAttributes class]]) {
+            CalendarLayoutAttributes *cla = (CalendarLayoutAttributes *)layoutAttributes;
+            self.topConstraint.constant += cla.headlineHeight;
+        }
+    }
 }
 
 @end

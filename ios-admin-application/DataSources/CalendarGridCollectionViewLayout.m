@@ -201,13 +201,15 @@ const NSUInteger kItemZIndex = 550;
         [adjustments removeAllObjects];
         NSMutableArray <CalendarLayoutAttributes *> *layoutAttributesForSection = [NSMutableArray array];
         [layoutAttributesBySections addObject:layoutAttributesForSection];
+        CalendarSectionDataSource *section = self.dataSource.sections[sectionIndex];
         [[self.dataSource bookingsForSection:sectionIndex] enumerateObjectsUsingBlock:^(NSObject <SBBookingProtocol> *booking, NSUInteger idx, BOOL *stop) {
 
-            NSTimeInterval startOffset = [self startOffsetForDate:booking.startDate];
+            NSTimeInterval startOffset = [self startOffsetForDate:booking.startDate fromDate:section.startDate];
             NSTimeInterval duration = (booking.endDate.timeIntervalSince1970 - booking.startDate.timeIntervalSince1970) / 60.;
 
             CalendarLayoutAttributes *attributes = [CalendarLayoutAttributes layoutAttributesForCellWithIndexPath:[NSIndexPath indexPathForItem:idx
                                                                                                                                       inSection:sectionIndex]];
+            attributes.headlineHeight = self.headlineHeight;
             attributes.startOffset = startOffset;
             attributes.duration = duration;
             attributes.frame = CGRectMake(0, startOffset * self.minuteHeight + self.contentInsets.top + self.headlineHeight,
@@ -687,11 +689,17 @@ const NSUInteger kItemZIndex = 550;
 - (NSTimeInterval)startOffsetForDate:(nonnull NSDate *)date
 {
     NSParameterAssert(date != nil);
+    return [self startOffsetForDate:date fromDate:self.dataSource.workingHoursMatrix.start];
+}
+
+- (NSTimeInterval)startOffsetForDate:(nonnull NSDate *)date fromDate:(nonnull NSDate *)startDate
+{
+    NSParameterAssert(date != nil);
+    NSParameterAssert(startDate != nil);
     NSCalendar *calendar = [NSDate sb_calendar];
-    NSTimeInterval workHoursStartRoundHours = [calendar component:NSCalendarUnitHour fromDate:self.dataSource.workingHoursMatrix.start] * 60;
-    NSTimeInterval bookingStartMins = [calendar component:NSCalendarUnitHour fromDate:date] * 60
-            + [calendar component:NSCalendarUnitMinute fromDate:date];
-    return bookingStartMins - workHoursStartRoundHours;
+    NSDateComponents *c = [calendar components:NSCalendarUnitHour fromDate:startDate toDate:date options:0];
+    NSTimeInterval bookingStartMins = c.hour * 60 + [calendar component:NSCalendarUnitMinute fromDate:date];
+    return bookingStartMins;
 }
 
 - (nonnull CalendarLayoutAttributes *)correctAttributesGeometry:(nonnull CalendarLayoutAttributes *)attributes

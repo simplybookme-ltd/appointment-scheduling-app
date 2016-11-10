@@ -28,7 +28,9 @@ extern NSString * const kSBTimePeriodWeek;
 
 + (instancetype)defaultSession;
 
-- (instancetype)initWithUser:(SBUser *)user token:(NSString *)token domain:(NSString *)domain;
++ (void)setDomainString:(NSString *)domainString companyLogin:(NSString *)companyLogin;
+
+- (instancetype)initWithUser:(SBUser *)user token:(NSString *)token; //domain:(NSString *)domain;
 - (void)invalidate;
 
 - (void)cancelRequestWithID:(NSString *)requestID;
@@ -40,7 +42,7 @@ extern NSString * const kSBTimePeriodWeek;
 - (SBRequest *)getCompanyInfoWithCallback:(SBRequestCallback)callback;
 - (SBRequest *)getUnitWorkdayInfoForStartDate:(NSDate *)startDate endDate:(NSDate *)endDate callback:(SBRequestCallback)callback;
 - (SBRequest *)getWorkDaysTimesForDate:(NSDate *)startDate callback:(SBRequestCallback)callback;
-- (SBRequest *)getWorkDaysTimesForStartDate:(NSDate *)startDate endDate:(NSDate *)endDate callback:(SBRequestCallback)callback;
+- (SBRequest *)getWorkDaysTimesForStartDate:(NSDate *)startDate endDate:(NSDate *)endDate type:(NSString *)type callback:(SBRequestCallback)callback;
 - (SBRequest *)getBookingDetails:(NSString *)bookingID callback:(SBRequestCallback)callback;
 - (SBRequest *)cancelBookingWithID:(NSString *)bookingID callback:(SBRequestCallback)callback;
 - (SBRequest *)getUnitList:(SBRequestCallback)callback;
@@ -57,6 +59,8 @@ extern NSString * const kSBTimePeriodWeek;
 - (SBRequest *)getCompanyParam:(NSString *)paramKey callback:(SBRequestCallback)callback;
 - (SBRequest *)getGoogleCalendarBusyTimeFromDate:(NSDate *)fromDate toDate:(NSDate *)toDate unitID:(NSString *)unitID callback:(SBRequestCallback)callback;
 - (SBRequest *)getLocationsWithCallback:(SBRequestCallback)callback;
+- (SBRequest *)getBookingComment:(NSString *)bookingID callback:(SBRequestCallback)callback;
+- (SBRequest *)setBookingComment:(NSString *)comment bookingID:(NSString *)bookingID callback:(SBRequestCallback)callback;
 
 // statuses plugin
 - (SBRequest *)getStatusesList:(SBRequestCallback)callback;

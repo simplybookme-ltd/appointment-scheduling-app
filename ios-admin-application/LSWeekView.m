@@ -75,6 +75,8 @@ NSString* const CollectionViewCellId = @"WeekViewCell";
 - (void)commotInitForLSWeekView
 {
     [self sizeToFit];
+    
+    self.firstWeekday = self.calendar.firstWeekday;
 
     // We should always have a valid selected date
     //
@@ -375,10 +377,9 @@ NSString* const CollectionViewCellId = @"WeekViewCell";
     {
         NSInteger newDateWeekday = [self weekdayComponentFromDate:newDate];
 
-        NSUInteger firstWeekday = self.calendar.firstWeekday;
-        NSUInteger lastWeekday = (firstWeekday == 1) ? 7 : (firstWeekday - 1);
+        NSUInteger lastWeekday = (self.firstWeekday == 1) ? 7 : (self.firstWeekday - 1);
 
-        if ([newDate laterDate:prevDate] == newDate && newDateWeekday == firstWeekday)
+        if ([newDate laterDate:prevDate] == newDate && newDateWeekday == self.firstWeekday)
         {
             indexPath = [NSIndexPath indexPathForRow:0 inSection:self.indexPathToMiddleSection.section - 1];
             [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
@@ -414,7 +415,7 @@ NSString* const CollectionViewCellId = @"WeekViewCell";
     [self.dateFormatter setTimeZone:self.calendar.timeZone];
     [self.dateFormatter setDateFormat:@"EEEE MMMM d yyyy"];
 
-    NSUInteger firstWeekdayIndex = self.calendar.firstWeekday - 1;
+    NSUInteger firstWeekdayIndex = self.firstWeekday - 1;
 
     for (int i=0; i < 7; i++)
     {
@@ -501,13 +502,13 @@ NSString* const CollectionViewCellId = @"WeekViewCell";
     NSInteger dayOffset = 0;
     NSInteger weekday = [self weekdayComponentFromDate:self.selectedDate];
 
-    if (weekday > self.calendar.firstWeekday)
+    if (weekday > self.firstWeekday)
     {
-        dayOffset = self.calendar.firstWeekday - weekday;
+        dayOffset = self.firstWeekday - weekday;
     }
-    else if (weekday < self.calendar.firstWeekday)
+    else if (weekday < self.firstWeekday)
     {
-        dayOffset = self.calendar.firstWeekday - weekday - 7;
+        dayOffset = self.firstWeekday - weekday - 7;
     }
 
     // We always display the middle section in the collection view

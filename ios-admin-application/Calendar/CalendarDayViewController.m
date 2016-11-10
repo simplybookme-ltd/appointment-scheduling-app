@@ -31,10 +31,11 @@
 #import "SBSessionManager.h"
 #import "SBBookingStatusesCollection.h"
 #import "SBPluginsRepository.h"
-#import "SBPerformer.h"
-#import "SBCache.h"
 #import "SBReachability.h"
 #import "SBUser.h"
+#import "CalendarBookingPresenter.h"
+#import "CalendarDataLoaderFactory.h"
+#import "CalendarDataProcessors.h"
 
 @interface CalendarDayViewController () <UIGestureRecognizerDelegate>
 {
@@ -47,6 +48,7 @@
 @property (nonatomic, weak) IBOutlet UILabel *noWorkingHoursLabel;
 @property (nonatomic, weak) IBOutlet UILabel *noCollectionLabel;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
+@property (nonatomic, strong) NSObject <CalendarDataLoader> *dataLoader;
 @property (nonatomic, strong) CalendarDataSource *calendarDataSource;
 @property (nonatomic, strong) CalendarGridCollectionViewLayout *calendarGridLayout;
 @property (nonatomic, strong) CalendarListCollectionViewLayout *calendarListLayout;
@@ -55,6 +57,8 @@
 @end
 
 @implementation CalendarDayViewController
+
+@synthesize dataLoader = _dataLoader;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -68,6 +72,11 @@
         self.filter.unitGroupID = user.associatedPerformerID;
     }
 
+    SBSession *session = [SBSession defaultSession];
+    if ([session.settings objectForKey:kSBSettingsCalendarFirstWeekdayKey]) {
+        self.weekView.firstWeekday = [[session.settings objectForKey:kSBSettingsCalendarFirstWeekdayKey] integerValue];
+    }
+    [self.weekView reloadData];
     self.weekView.backgroundColor = [UIColor sb_navigationBarColor];
     __weak typeof (self) weakSelf = self;
     self.weekView.didChangeSelectedDateBlock = ^(NSDate *date) {
@@ -89,6 +98,8 @@
     self.collectionView.allowsMultipleSelection = YES;
 
     self.calendarDataSource = [CalendarDataSource new];
+    self.calendarDataSource.displayServiceForWideLayout = YES;
+    self.calendarDataSource.displayPerformerForWideLayout = YES;
     self.collectionView.dataSource = self.calendarDataSource;
     [self.calendarDataSource configureCollectionView:self.collectionView];
 
@@ -105,12 +116,15 @@
                                                  name:UIApplicationDidReceiveRemoteNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionDidEndNotificationHandler:)
                                                  name:kSBSessionManagerDidEndSessionNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForegroundNotificationHandler:)
+                                                 name:UIApplicationWillEnterForegroundNotification object:nil];
 }
 
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:kSBSessionManagerDidEndSessionNotification object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidReceiveRemoteNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [self.calendarGridLayout finilize];
     [self.calendarListLayout finilize];
 }
@@ -174,7 +188,7 @@
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
-    if (![self isLoading] || self.calendarDataSource.timeframeStep) {
+    if (!([self isLoading] && self.dataLoader.isLoading) || self.calendarDataSource.timeframeStep) {
         if ([self.traitCollection isWideLayout]) {
             self.collectionView.collectionViewLayout = self.calendarGridLayout;
         }
@@ -198,122 +212,69 @@
     }];
 }
 
+- (NSObject<CalendarDataLoader> *)dataLoader
+{
+    if (!_dataLoader) {
+        _dataLoader = [CalendarDataLoaderFactory dataLoaderForType:self.dataLoaderType];
+        [_dataLoader addDataProcessor:[[CalendarDataPerformersLocalSaverDataProcessor alloc] init]];
+        [_dataLoader addDataProcessor:[[CalendarDataBookingsDataLocalSaverProcessor alloc] init]];
+        NSAssert(_dataLoader != nil, @"No data loader.");
+        if (!_dataLoader) {
+            return nil;
+        }
+    }
+    return _dataLoader;
+}
+
 - (void)loadData
 {
     NSAssert(self.filter != nil, @"no filter");
     NSAssert(self.filter.from != nil, @"no date selected");
 
-    SBSession *session = [SBSession defaultSession];
-    [session cancelRequests:pendingRequests];
-    NSAssert(session != nil, @"no active session");
-
-    SBRequestsGroup *group = [SBRequestsGroup new];
-
-    __block NSInteger timeframeStep = 0;
-    SBRequest *loadCompanyInfoRequest = [session getCompanyInfoWithCallback:^(SBResponse *response) {
-        SBCompanyInfo *companyInfo = response.result;
-        timeframeStep = [companyInfo.timeframe integerValue];
-    }];
-    [group addRequest:loadCompanyInfoRequest];
-    
-    SBRequest *pluginCheckRequest = [session isPluginActivated:kSBPluginRepositoryGoogleCalendarSyncPlugin callback:^(SBResponse<NSNumber *> * _Nonnull response) {
-        if (response.result) {
-            [[SBPluginsRepository repository] setPlugin:kSBPluginRepositoryGoogleCalendarSyncPlugin enabled:[response.result boolValue]];
-        }
-    }];
-    [group addRequest:pluginCheckRequest];
-
-    __block NSDictionary *workingHours = nil;
-    SBRequest *loadTimeframeRequest = [session getWorkDaysTimesForDate:self.filter.from callback:^(SBResponse *response) {
-        workingHours = response.result;
-    }];
-    [group addRequest:loadTimeframeRequest];
-
-    NSMutableArray *sections = [NSMutableArray array];
-    __block SBPerformersCollection *performers = nil;
-    SBRequest *loadPerformersRequest = [session getUnitList:^(SBResponse<SBPerformersCollection *> *response) {
-        [sections removeAllObjects];
-        SBUser *user = [SBSession defaultSession].user;
-        NSAssert(user != nil, @"no user found");
-        if ([user hasAccessToACLRule:SBACLRulePerformersFullListAccess]) {
-            performers = response.result;
-        } else {
-            NSAssert(user.associatedPerformerID != nil && ![user.associatedPerformerID isEqualToString:@""], @"invalid associated performer value");
-            performers = [response.result collectionWithObjectsPassingTest:^BOOL(SBPerformer * _Nonnull object, NSUInteger idx, BOOL * _Nonnull stop) {
-                *stop = [object.performerID isEqualToString:user.associatedPerformerID];
-                return *stop;
-            }];
-        }
-        NSPredicate *sectionPredicate = [NSPredicate predicateWithBlock:^BOOL(NSObject<SBBookingProtocol> * evaluatedObject, NSDictionary *bindings) {
-            return [evaluatedObject.performerID isEqualToString:bindings[kCalendarSectionDataSourcePerformerIDBindingKey]];
-        }];
-        [performers enumerateUsingBlock:^(NSString * _Nonnull performerID, SBPerformer * _Nonnull performer, BOOL * _Nonnull stop) {
-            NSDictionary *bindings = @{kCalendarSectionDataSourcePerformerIDBindingKey: performerID};
-            CalendarSectionDataSource *section = [[CalendarSectionDataSource alloc] initWithTitle:performer.name
-                                                                                        predicate:sectionPredicate
-                                                                            substitutionVariables:bindings];
-            section.sectionID = performerID;
-            [sections addObject:section];
-        }];
-    }];
-    [group addRequest:loadPerformersRequest];
-
-    __block SBBookingStatusesCollection *statuses = nil;
-    SBRequest *loadStatusesRequest = [session getStatusesList:^(SBResponse <SBBookingStatusesCollection *> *response) {
-        statuses = response.result;
-    }];
-    [group addRequest:loadStatusesRequest];
-
-    __block NSArray <SBBooking *> *bookings = nil;
-    SBRequest *loadBookingsRequest = [[SBSession defaultSession] getBookingsWithFilter:self.filter callback:^(SBResponse *response) {
-        bookings = response.result;
-    }];
-    loadBookingsRequest.cachePolicy = SBIgnoreCachePolicy;
-    [loadBookingsRequest addDependency:loadTimeframeRequest];
-    [loadBookingsRequest addDependency:loadStatusesRequest];
-    [group addRequest:loadBookingsRequest];
-
-    group.callback = ^(SBResponse *response) {
-        [pendingRequests removeObject:response.requestGUID];
+    self.activityIndicator.hidden = NO;
+    [self.dataLoader loadDataWithFilter:self.filter callback:^(CalendarDataLoaderResult * _Nonnull result) {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.activityIndicator.hidden = YES;
-            if (response.error) {
-                if (!response.canceled && !response.error.isNetworkConnectionError) {
-                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
-                                                                    message:[response.error message]
-                                                                   delegate:nil cancelButtonTitle:NSLS(@"OK",@"")
-                                                          otherButtonTitles:nil];
-                    [alert show];
-                }
-                else if (response.error.isNetworkConnectionError) {
-                    self.noCollectionLabel.hidden = NO;
+            if (result.error) {
+                if (result.error.code != SBUserCancelledErrorCode) {
+                    if (!result.error.isNetworkConnectionError) {
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"Error",@"")
+                                                                                       message:[result.error message]
+                                                                                preferredStyle:UIAlertControllerStyleAlert];
+                        [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"OK",@"") style:UIAlertActionStyleDefault handler:nil]];
+                        [self presentViewController:alert animated:YES completion:nil];
+                    }
+                    else if (result.error.isNetworkConnectionError) {
+                        self.noCollectionLabel.hidden = NO;
+                    }
                 }
             } else {
-                self.loading = NO;
-                [self processBookings:bookings];
-                [self processPerformers:performers];
-                [self.calendarDataSource setTimeframeStep:timeframeStep];
-                SBWorkingHoursMatrix *workingHoursMatrix = [[SBWorkingHoursMatrix alloc] initWithData:workingHours forDate:self.filter.from];
-                [workingHoursMatrix updateDatesUsingBookingsInfo:bookings];
-                [self.calendarGridLayout setWorkingHoursMatrix:workingHoursMatrix];
-                [self.calendarListLayout setWorkingHoursMatrix:workingHoursMatrix];
-                [self.calendarDataSource setPerformers:performers];
-                [self.calendarDataSource setWorkingHoursMatrix:workingHoursMatrix];
-                [self.calendarDataSource setSections:sections];
-                [self.calendarDataSource setStatusesCollection:statuses];
-                [self.calendarDataSource setBookings:bookings sortingStrategy:CalendarGridBookingsLayoutSortingStrategy];
+                self.calendarDataSource.displayPerformerForWideLayout = self.dataLoader.recommendsDisplayPerformer;
+                self.calendarDataSource.displayServiceForWideLayout = self.dataLoader.recommendsDisplayService;
+                [self.calendarDataSource setTimeframeStep:result.timeframeStep];
+                [self.calendarGridLayout setWorkingHoursMatrix:result.workingHoursMatrix];
+                [self.calendarListLayout setWorkingHoursMatrix:result.workingHoursMatrix];
+                [self.calendarDataSource setWorkingHoursMatrix:result.workingHoursMatrix];
+                [self.calendarDataSource setSections:result.sections];
+                [self.calendarDataSource setBookings:result.bookings sortingStrategy:CalendarGridBookingsLayoutSortingStrategy];
+                
+                [self.calendarDataSource resetPresenters];
+                [self.calendarDataSource addPresenter:[CalendarBookingDefaultPresenter presenter]];
+                if (result.performers) {
+                    [self.calendarDataSource addPresenter:[[CalendarBookingPerformerPresenter alloc] initWithPerformers:result.performers]];
+                }
+                if (result.statuses) {
+                    [self.calendarDataSource addPresenter:[[CalendarBookingStatusPresenter alloc] initWithStatuses:result.statuses]];
+                }
+                
                 [self.collectionView reloadData];
                 [self.collectionView.collectionViewLayout invalidateLayout];
                 [self.collectionView setContentOffset:CGPointZero animated:YES];
-                self.noWorkingHoursLabel.hidden = (workingHoursMatrix.hours.count != 0);
+                self.noWorkingHoursLabel.hidden = (result.workingHoursMatrix.hours.count != 0);
                 [self loadGoogleCalendarBusiTime];
             }
         });
-    };
-    self.activityIndicator.hidden = NO;
-    [pendingRequests addObject:group.GUID];
-    self.loading = YES;
-    [session performReqeust:group];
+    }];
 }
 
 - (SBRequest *)requestForGoogleCalendarBusyTime
@@ -373,37 +334,31 @@
 
 - (void)refreshAction:(id)sender
 {
-    [[SBSession defaultSession] cancelRequests:pendingRequests];
-    SBRequest *request = [[SBSession defaultSession] getBookingsWithFilter:self.filter callback:^(SBResponse *response) {
-        [pendingRequests removeObject:response.requestGUID];
-        if (response.error && !response.canceled) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if (response.error.isNetworkConnectionError) {
-                    self.noCollectionLabel.hidden = NO;
-                    return;
-                }
-                [self.refreshControl endRefreshing];
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLS(@"Error",@"")
-                                                                message:[response.error message]
-                                                               delegate:nil cancelButtonTitle:NSLS(@"OK",@"")
-                                                      otherButtonTitles:nil];
-                [alert show];
-            });
-            return ;
-        }
+    [self.dataLoader refreshDataWithFilter:self.filter callback:^(CalendarDataLoaderResult * _Nonnull result) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self processBookings:response.result];
-            [self.refreshControl endRefreshing];
-            [self.calendarDataSource setBookings:response.result sortingStrategy:CalendarGridBookingsLayoutSortingStrategy];
-            [self.collectionView reloadData];
-            [self.collectionView.collectionViewLayout invalidateLayout];
-            [self.collectionView setContentOffset:CGPointZero animated:YES];
-            [self loadGoogleCalendarBusiTime];
+            if (result.error) {
+                if (result.error.code != SBUserCancelledErrorCode) {
+                    if (!result.error.isNetworkConnectionError) {
+                        UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLS(@"Error",@"")
+                                                                                       message:[result.error message]
+                                                                                preferredStyle:UIAlertControllerStyleAlert];
+                        [alert addAction:[UIAlertAction actionWithTitle:NSLS(@"OK",@"") style:UIAlertActionStyleDefault handler:nil]];
+                        [self presentViewController:alert animated:YES completion:nil];
+                    }
+                    else if (result.error.isNetworkConnectionError) {
+                        self.noCollectionLabel.hidden = NO;
+                    }
+                }
+            } else {
+                [self.refreshControl endRefreshing];
+                [self.calendarDataSource setBookings:result.bookings sortingStrategy:CalendarGridBookingsLayoutSortingStrategy];
+                [self.collectionView reloadData];
+                [self.collectionView.collectionViewLayout invalidateLayout];
+                [self.collectionView setContentOffset:CGPointZero animated:YES];
+                [self loadGoogleCalendarBusiTime];
+            }
         });
     }];
-    request.cachePolicy = SBIgnoreCachePolicy;
-    [pendingRequests addObject:request.GUID];
-    [[SBSession defaultSession] performReqeust:request];
 }
 
 - (IBAction)showTodayAction:(id)sender
@@ -425,7 +380,7 @@
         layout = self.calendarListLayout;
     }
     NSIndexPath *indexPath = [layout indexPathForCellAtPosition:position];
-    if (indexPath) {
+    if (indexPath && self.calendarDataSource.workingHoursMatrix.hours.count > indexPath.item) {
         NSUInteger timeStep = [layout timeStepOffsetForCellAtPosition:position calculatedIndexPath:indexPath];
         NSDate *startHour = [self.calendarDataSource.workingHoursMatrix.hours[indexPath.item] dateByAddingTimeInterval:timeStep * self.calendarDataSource.timeframeStep * 60];
         NSDate *endHour = [startHour dateByAddingTimeInterval:self.calendarDataSource.timeframeStep * 60];
@@ -470,10 +425,21 @@
     }
 }
 
+- (void)applicationWillEnterForegroundNotificationHandler:(NSNotification *)notification
+{
+    [self loadData];
+}
+
 #pragma mark - Gesture Recognizer Delegate
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
+    SBUser *user = [SBSession defaultSession].user;
+    NSAssert(user != nil, @"no user found");
+    if (![user hasAccessToACLRule:SBACLRuleEditBooking] && ![user hasAccessToACLRule:SBACLRuleEditOwnBooking]) {
+        return NO;
+    }
+    [self.collectionView.collectionViewLayout invalidateLayout];
     return [self.collectionView indexPathForItemAtPoint:[touch locationInView:self.collectionView]] == nil;
 }
 
@@ -626,7 +592,6 @@
         else if ([segue.identifier isEqualToString:@"showBookingList-iPad"]) {
             controller = (BookingsListViewController *)[(UINavigationController *) segue.destinationViewController topViewController];
         }
-        controller.statuses = self.calendarDataSource.statuses;
         controller.timeframeStep = self.calendarDataSource.timeframeStep;
         controller.bookings = bookings;
     }
@@ -640,7 +605,8 @@
             controller.initialDate = (booking.startDate ? booking.startDate : [NSDate date]);
             controller.preferedStartTime = booking.startDate;
             CalendarSectionDataSource *section = self.calendarDataSource.sections[indexPath.section];
-            controller.preferedPerformerID = (NSString *) section.sectionID;
+            controller.preferedPerformerID = section.performerID;
+            controller.preferedServiceID = section.serviceID;
         }
         else {
             controller.initialDate = self.weekView.selectedDate;

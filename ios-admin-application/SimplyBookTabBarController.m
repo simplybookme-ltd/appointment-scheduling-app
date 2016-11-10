@@ -43,7 +43,7 @@ NS_ENUM(NSInteger, _Tabs) {
             [controllers removeObjectAtIndex:Dashboard];
             self.viewControllers = controllers;
         }
-        if (![user hasAccessToACLRule:SBACLRulePendingBookingsAccess]) {
+        if (![user hasAccessToACLRule:SBACLRuleEditBooking] && ![user hasAccessToACLRule:SBACLRuleEditOwnBooking]) {
             NSMutableArray *controllers = [NSMutableArray arrayWithArray:self.viewControllers];
             [controllers removeObjectAtIndex:Pending];
             self.viewControllers = controllers;
@@ -75,22 +75,32 @@ NS_ENUM(NSInteger, _Tabs) {
     if (getPendingBookingsCountRequest) {
         [session cancelRequestWithID:getPendingBookingsCountRequest.GUID];
     }
-    getPendingBookingsCountRequest = [session getPendingBookingsCountWithCallback:^(SBResponse<NSNumber *> * _Nonnull response) {
+    // can't use getPendingBookingsCount requests because need to filter bookings by performer according to ACL
+    getPendingBookingsCountRequest = [[SBSession defaultSession] getPendingBookingsWithCallback:^(SBResponse<NSArray *> * _Nonnull response) {
         if (!response.error) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSAssert([[self.viewControllers[2] topViewController] isKindOfClass:[PendingBookingsViewController class]],
+                NSAssert([[self.viewControllers[Pending] topViewController] isKindOfClass:[PendingBookingsViewController class]],
                          @"unexpected navigation structure. %@ expected at tab place 1. %@ occurred.",
-                         NSStringFromClass([PendingBookingsViewController class]), NSStringFromClass([[self.viewControllers[1] topViewController] class]));
-                if (pendingBookingsCount != response.result.unsignedIntegerValue) {
+                         NSStringFromClass([PendingBookingsViewController class]), NSStringFromClass([[self.viewControllers[Pending] topViewController] class]));
+                SBUser *user = [SBSession defaultSession].user;
+                NSAssert(user != nil, @"no user found");
+                NSInteger count = [response.result count];
+                if (![user hasAccessToACLRule:SBACLRuleEditBooking] && [user hasAccessToACLRule:SBACLRuleEditOwnBooking]) {
+                    NSIndexSet *indexes = [response.result indexesOfObjectsPassingTest:^BOOL(NSDictionary * obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        return [obj[@"unit_group_id"] isEqualToString:user.associatedPerformerID];
+                    }];
+                    count = indexes.count;
+                }
+                if (pendingBookingsCount != count) {
                     SBRequest *getPendingBookingsRequest = [session getPendingBookingsWithCallback:nil];
                     [[SBCache cache] invalidateCacheForRequest:getPendingBookingsRequest];
                 }
-                if (pendingBookingsCount != response.result.unsignedIntegerValue) {
+                if (pendingBookingsCount != count) {
                     [[NSNotificationCenter defaultCenter] postNotificationName:kSBPendingBookings_DidUpdateNotification
                                                                         object:self
-                                                                      userInfo:@{kSBPendingBookings_BookingsCountKey: [response.result copy]}];
+                                                                      userInfo:@{kSBPendingBookings_BookingsCountKey: @(count)}];
                 }
-                [self setPendingBookingsCount:response.result.unsignedIntegerValue];
+                [self setPendingBookingsCount:count];
             });
         }
     }];
@@ -103,12 +113,12 @@ NS_ENUM(NSInteger, _Tabs) {
     pendingBookingsCount = count;
     if (pendingBookingsCount != 0) {
         if (pendingBookingsCount >= 99) {
-            self.viewControllers[1].tabBarItem.badgeValue = @"99";
+            self.viewControllers[Pending].tabBarItem.badgeValue = @"99";
         } else {
-            self.viewControllers[1].tabBarItem.badgeValue = [NSString stringWithFormat:@"%lu", (unsigned long)pendingBookingsCount];
+            self.viewControllers[Pending].tabBarItem.badgeValue = [NSString stringWithFormat:@"%lu", (unsigned long)pendingBookingsCount];
         }
     } else {
-        self.viewControllers[1].tabBarItem.badgeValue = nil;
+        self.viewControllers[Pending].tabBarItem.badgeValue = nil;
     }
 }
 

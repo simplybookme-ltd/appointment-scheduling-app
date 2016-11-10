@@ -47,6 +47,8 @@
 		B027058F1BE0BF8100DE0F55 /* CalendarSectionDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = B027058E1BE0BF8100DE0F55 /* CalendarSectionDataSource.m */; };
 		B02926F91C047248008326B1 /* SBPerformer+FilterListSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = B02926F81C047248008326B1 /* SBPerformer+FilterListSelector.m */; };
 		B02926FC1C047361008326B1 /* SBService+FilterListSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = B02926FB1C047361008326B1 /* SBService+FilterListSelector.m */; };
+		B02B18A31DC8890F00F7A548 /* CalendarWeekView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B02B18A11DC8890F00F7A548 /* CalendarWeekView.storyboard */; };
+		B02B18A61DC8897B00F7A548 /* CalendarDailyPerformersView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B02B18A41DC8897B00F7A548 /* CalendarDailyPerformersView.storyboard */; };
 		B02C89601BEA03EE00C6AEFC /* SwipeContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B02C895F1BEA03EE00C6AEFC /* SwipeContainerViewController.m */; };
 		B030116C1BFC6F7100CB63FA /* PendingBookingsCollectionViewLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = B030116B1BFC6F7100CB63FA /* PendingBookingsCollectionViewLayout.m */; };
 		B03011701BFC9B7600CB63FA /* BookingApproveStatusTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B030116E1BFC9B7600CB63FA /* BookingApproveStatusTableViewCell.m */; };
@@ -85,6 +87,9 @@
 		B04DF7DD1BB2A84500046971 /* SBValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = B00FB0441B97253D0081ADB4 /* SBValidator.m */; };
 		B04DF7DF1BB2A84500046971 /* SBServerIDValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = B00FB04D1B972B1C0081ADB4 /* SBServerIDValidator.m */; };
 		B04DF7E21BB2CE1D00046971 /* SBGetWorkloadRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B04DF7E11BB2CE1D00046971 /* SBGetWorkloadRequest.m */; };
+		B050B6C31DC78F1700CBCEBE /* CalendarDataLoaderWeeklyGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = B050B6C21DC78F1700CBCEBE /* CalendarDataLoaderWeeklyGroup.m */; };
+		B050B6C61DC7A29100CBCEBE /* CalendarDataProcessors.m in Sources */ = {isa = PBXBuildFile; fileRef = B050B6C51DC7A29100CBCEBE /* CalendarDataProcessors.m */; };
+		B059DC591DC8A48100ECD62D /* CalendarDataLoaderDailyServicesGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = B059DC581DC8A48100ECD62D /* CalendarDataLoaderDailyServicesGroup.m */; };
 		B05CFDEC1BC67C7A00D26E52 /* SBAdditionalField.m in Sources */ = {isa = PBXBuildFile; fileRef = B05CFDDB1BC67C7A00D26E52 /* SBAdditionalField.m */; };
 		B05CFDED1BC67C7A00D26E52 /* SBBooking.m in Sources */ = {isa = PBXBuildFile; fileRef = B05CFDDD1BC67C7A00D26E52 /* SBBooking.m */; };
 		B05CFDEE1BC67C7A00D26E52 /* SBBookingForm.m in Sources */ = {isa = PBXBuildFile; fileRef = B05CFDDF1BC67C7A00D26E52 /* SBBookingForm.m */; };
@@ -96,7 +101,6 @@
 		B05CFDF71BC67D9C00D26E52 /* DSSectionDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = B05CFDF61BC67D9C00D26E52 /* DSSectionDataSource.m */; };
 		B05CFDFA1BC67DD500D26E52 /* ACHAdditionalFieldsDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = B05CFDF91BC67DD500D26E52 /* ACHAdditionalFieldsDataSource.m */; };
 		B06AB3911CA537FC00009319 /* SBReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = B06AB3901CA537FC00009319 /* SBReachability.m */; };
-		B06AB3941CA580FE00009319 /* CalendarBookingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B06AB3931CA580FE00009319 /* CalendarBookingsViewController.m */; };
 		B06C452E1C722E680038835E /* SBGetGoogleCalendarBusyTimeRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B06C452D1C722E680038835E /* SBGetGoogleCalendarBusyTimeRequest.m */; };
 		B06C452F1C722E680038835E /* SBGetGoogleCalendarBusyTimeRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B06C452D1C722E680038835E /* SBGetGoogleCalendarBusyTimeRequest.m */; };
 		B06DD7C71BA1C5A4006FD0A5 /* LSWeekCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B06DD7C51BA1C5A4006FD0A5 /* LSWeekCollectionViewCell.m */; };
@@ -151,6 +155,10 @@
 		B0B263FE1BB4574E007C1F77 /* DashboardCollectionViewLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = B0B263FD1BB4574E007C1F77 /* DashboardCollectionViewLayout.m */; };
 		B0B658761BDFCE50003351D8 /* CalendarFilter.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B0B658741BDFCE50003351D8 /* CalendarFilter.storyboard */; };
 		B0B658791BDFCF79003351D8 /* AddEditBooking.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B0B658771BDFCF79003351D8 /* AddEditBooking.storyboard */; };
+		B0B81E2D1D4F75B6009FB06B /* SBSetBookingCommentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B0B81E2C1D4F75B6009FB06B /* SBSetBookingCommentRequest.m */; };
+		B0B81E2E1D4F75B6009FB06B /* SBSetBookingCommentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B0B81E2C1D4F75B6009FB06B /* SBSetBookingCommentRequest.m */; };
+		B0B81E311D4F7701009FB06B /* SBGetBookingCommentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B0B81E301D4F7701009FB06B /* SBGetBookingCommentRequest.m */; };
+		B0B81E321D4F7701009FB06B /* SBGetBookingCommentRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B0B81E301D4F7701009FB06B /* SBGetBookingCommentRequest.m */; };
 		B0B8BE3B1BF4CF350033321A /* SBDateRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0B8BE3A1BF4CF350033321A /* SBDateRangeTests.swift */; };
 		B0B8BE3C1BF4CF920033321A /* SBDateRange.m in Sources */ = {isa = PBXBuildFile; fileRef = B05CFDE51BC67C7A00D26E52 /* SBDateRange.m */; };
 		B0B8BE3F1BF6254D0033321A /* SBBookingStatusesCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = B0B8BE3E1BF6254D0033321A /* SBBookingStatusesCollection.m */; };
@@ -180,6 +188,11 @@
 		B0CCB1C31CA3F1D300AB39BB /* SimplyBookDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B0CCB1C11CA3F1D300AB39BB /* SimplyBookDataModel.xcdatamodeld */; };
 		B0CCB1CD1CA3FA7100AB39BB /* LSBooking+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = B0CCB1CA1CA3FA7100AB39BB /* LSBooking+CoreDataProperties.m */; };
 		B0CCB1CE1CA3FA7100AB39BB /* LSBooking.m in Sources */ = {isa = PBXBuildFile; fileRef = B0CCB1CC1CA3FA7100AB39BB /* LSBooking.m */; };
+		B0CCFAD01DC37BBE00B257AB /* CalendarDataLoaderFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = B0CCFACF1DC37BBE00B257AB /* CalendarDataLoaderFactory.m */; };
+		B0CCFAD31DC37BDE00B257AB /* CalendarDataLoaderDailyPerformersGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = B0CCFAD21DC37BDE00B257AB /* CalendarDataLoaderDailyPerformersGroup.m */; };
+		B0CCFAD91DC3882600B257AB /* CalendarBookingPresenter.m in Sources */ = {isa = PBXBuildFile; fileRef = B0CCFAD81DC3882600B257AB /* CalendarBookingPresenter.m */; };
+		B0CF107E1DD1CF75001AECA8 /* TermsAndConditions.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B0CF107C1DD1CF75001AECA8 /* TermsAndConditions.storyboard */; };
+		B0CF10811DD1D024001AECA8 /* TermsAndConditionsController.m in Sources */ = {isa = PBXBuildFile; fileRef = B0CF10801DD1D024001AECA8 /* TermsAndConditionsController.m */; };
 		B0D071CD1CC7C6B600F14BAB /* SBGetServiceUrlRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = B0D071CC1CC7C6B600F14BAB /* SBGetServiceUrlRequest.m */; };
 		B0D696071BA99846008AFF4E /* NewBookingPlaceholderCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B0D696051BA99846008AFF4E /* NewBookingPlaceholderCollectionViewCell.m */; };
 		B0D696081BA99846008AFF4E /* NewBookingPlaceholderCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B0D696061BA99846008AFF4E /* NewBookingPlaceholderCollectionViewCell.xib */; };
@@ -309,6 +322,8 @@
 		B02926F81C047248008326B1 /* SBPerformer+FilterListSelector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SBPerformer+FilterListSelector.m"; sourceTree = "<group>"; };
 		B02926FA1C047361008326B1 /* SBService+FilterListSelector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SBService+FilterListSelector.h"; sourceTree = "<group>"; };
 		B02926FB1C047361008326B1 /* SBService+FilterListSelector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SBService+FilterListSelector.m"; sourceTree = "<group>"; };
+		B02B18A21DC8890F00F7A548 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CalendarWeekView.storyboard; sourceTree = "<group>"; };
+		B02B18A51DC8897B00F7A548 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CalendarDailyPerformersView.storyboard; sourceTree = "<group>"; };
 		B02C895E1BEA03EE00C6AEFC /* SwipeContainerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwipeContainerViewController.h; sourceTree = "<group>"; };
 		B02C895F1BEA03EE00C6AEFC /* SwipeContainerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SwipeContainerViewController.m; sourceTree = "<group>"; };
 		B030116A1BFC6F7100CB63FA /* PendingBookingsCollectionViewLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PendingBookingsCollectionViewLayout.h; sourceTree = "<group>"; };
@@ -373,6 +388,12 @@
 		B04AE25F1C1EFA8D002A6E24 /* SBGetCompanyParamRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBGetCompanyParamRequest.m; sourceTree = "<group>"; };
 		B04DF7E01BB2CE1D00046971 /* SBGetWorkloadRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBGetWorkloadRequest.h; sourceTree = "<group>"; };
 		B04DF7E11BB2CE1D00046971 /* SBGetWorkloadRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBGetWorkloadRequest.m; sourceTree = "<group>"; };
+		B050B6C11DC78F1700CBCEBE /* CalendarDataLoaderWeeklyGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarDataLoaderWeeklyGroup.h; sourceTree = "<group>"; };
+		B050B6C21DC78F1700CBCEBE /* CalendarDataLoaderWeeklyGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalendarDataLoaderWeeklyGroup.m; sourceTree = "<group>"; };
+		B050B6C41DC7A29100CBCEBE /* CalendarDataProcessors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarDataProcessors.h; sourceTree = "<group>"; };
+		B050B6C51DC7A29100CBCEBE /* CalendarDataProcessors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalendarDataProcessors.m; sourceTree = "<group>"; };
+		B059DC571DC8A48100ECD62D /* CalendarDataLoaderDailyServicesGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarDataLoaderDailyServicesGroup.h; sourceTree = "<group>"; };
+		B059DC581DC8A48100ECD62D /* CalendarDataLoaderDailyServicesGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalendarDataLoaderDailyServicesGroup.m; sourceTree = "<group>"; };
 		B05CFDDA1BC67C7A00D26E52 /* SBAdditionalField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBAdditionalField.h; sourceTree = "<group>"; };
 		B05CFDDB1BC67C7A00D26E52 /* SBAdditionalField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBAdditionalField.m; sourceTree = "<group>"; };
 		B05CFDDC1BC67C7A00D26E52 /* SBBooking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBBooking.h; sourceTree = "<group>"; };
@@ -395,8 +416,6 @@
 		B05CFDF91BC67DD500D26E52 /* ACHAdditionalFieldsDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACHAdditionalFieldsDataSource.m; sourceTree = "<group>"; };
 		B06AB38F1CA537FC00009319 /* SBReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBReachability.h; sourceTree = "<group>"; };
 		B06AB3901CA537FC00009319 /* SBReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBReachability.m; sourceTree = "<group>"; };
-		B06AB3921CA580FD00009319 /* CalendarBookingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarBookingsViewController.h; sourceTree = "<group>"; };
-		B06AB3931CA580FE00009319 /* CalendarBookingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalendarBookingsViewController.m; sourceTree = "<group>"; };
 		B06C452C1C722E680038835E /* SBGetGoogleCalendarBusyTimeRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBGetGoogleCalendarBusyTimeRequest.h; sourceTree = "<group>"; };
 		B06C452D1C722E680038835E /* SBGetGoogleCalendarBusyTimeRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBGetGoogleCalendarBusyTimeRequest.m; sourceTree = "<group>"; };
 		B06DD7C41BA1C5A4006FD0A5 /* LSWeekCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LSWeekCollectionViewCell.h; path = ../LSWeekCollectionViewCell.h; sourceTree = "<group>"; };
@@ -486,6 +505,10 @@
 		B0B6586C1BDF88C8003351D8 /* CalendarGridCollectionViewLayout_Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarGridCollectionViewLayout_Private.h; sourceTree = "<group>"; };
 		B0B658751BDFCE50003351D8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/CalendarFilter.storyboard; sourceTree = "<group>"; };
 		B0B658781BDFCF79003351D8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/AddEditBooking.storyboard; sourceTree = "<group>"; };
+		B0B81E2B1D4F75B6009FB06B /* SBSetBookingCommentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBSetBookingCommentRequest.h; sourceTree = "<group>"; };
+		B0B81E2C1D4F75B6009FB06B /* SBSetBookingCommentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBSetBookingCommentRequest.m; sourceTree = "<group>"; };
+		B0B81E2F1D4F7701009FB06B /* SBGetBookingCommentRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBGetBookingCommentRequest.h; sourceTree = "<group>"; };
+		B0B81E301D4F7701009FB06B /* SBGetBookingCommentRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBGetBookingCommentRequest.m; sourceTree = "<group>"; };
 		B0B8BE391BF4CF350033321A /* ios-admin-applicationTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ios-admin-applicationTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B0B8BE3A1BF4CF350033321A /* SBDateRangeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SBDateRangeTests.swift; sourceTree = "<group>"; };
 		B0B8BE3D1BF6254D0033321A /* SBBookingStatusesCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBBookingStatusesCollection.h; sourceTree = "<group>"; };
@@ -523,8 +546,18 @@
 		B0CCB1CA1CA3FA7100AB39BB /* LSBooking+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "LSBooking+CoreDataProperties.m"; sourceTree = "<group>"; };
 		B0CCB1CB1CA3FA7100AB39BB /* LSBooking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LSBooking.h; sourceTree = "<group>"; };
 		B0CCB1CC1CA3FA7100AB39BB /* LSBooking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LSBooking.m; sourceTree = "<group>"; };
+		B0CCFACE1DC37BBE00B257AB /* CalendarDataLoaderFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarDataLoaderFactory.h; sourceTree = "<group>"; };
+		B0CCFACF1DC37BBE00B257AB /* CalendarDataLoaderFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalendarDataLoaderFactory.m; sourceTree = "<group>"; };
+		B0CCFAD11DC37BDE00B257AB /* CalendarDataLoaderDailyPerformersGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarDataLoaderDailyPerformersGroup.h; sourceTree = "<group>"; };
+		B0CCFAD21DC37BDE00B257AB /* CalendarDataLoaderDailyPerformersGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalendarDataLoaderDailyPerformersGroup.m; sourceTree = "<group>"; };
+		B0CCFAD71DC3882600B257AB /* CalendarBookingPresenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CalendarBookingPresenter.h; sourceTree = "<group>"; };
+		B0CCFAD81DC3882600B257AB /* CalendarBookingPresenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CalendarBookingPresenter.m; sourceTree = "<group>"; };
+		B0CF107D1DD1CF75001AECA8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/TermsAndConditions.storyboard; sourceTree = "<group>"; };
+		B0CF107F1DD1D024001AECA8 /* TermsAndConditionsController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TermsAndConditionsController.h; sourceTree = "<group>"; };
+		B0CF10801DD1D024001AECA8 /* TermsAndConditionsController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TermsAndConditionsController.m; sourceTree = "<group>"; };
 		B0D071CB1CC7C6B600F14BAB /* SBGetServiceUrlRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBGetServiceUrlRequest.h; sourceTree = "<group>"; };
 		B0D071CC1CC7C6B600F14BAB /* SBGetServiceUrlRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SBGetServiceUrlRequest.m; sourceTree = "<group>"; };
+		B0D452211D902743003F58B5 /* SimplyBook.me.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SimplyBook.me.entitlements; sourceTree = "<group>"; };
 		B0D696041BA99846008AFF4E /* NewBookingPlaceholderCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NewBookingPlaceholderCollectionViewCell.h; sourceTree = "<group>"; };
 		B0D696051BA99846008AFF4E /* NewBookingPlaceholderCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NewBookingPlaceholderCollectionViewCell.m; sourceTree = "<group>"; };
 		B0D696061BA99846008AFF4E /* NewBookingPlaceholderCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NewBookingPlaceholderCollectionViewCell.xib; sourceTree = "<group>"; };
@@ -690,6 +723,18 @@
 				B011D6061BA704E1006401F7 /* CalendarDataSource.m */,
 				B027058D1BE0BF8100DE0F55 /* CalendarSectionDataSource.h */,
 				B027058E1BE0BF8100DE0F55 /* CalendarSectionDataSource.m */,
+				B0CCFACE1DC37BBE00B257AB /* CalendarDataLoaderFactory.h */,
+				B0CCFACF1DC37BBE00B257AB /* CalendarDataLoaderFactory.m */,
+				B0CCFAD11DC37BDE00B257AB /* CalendarDataLoaderDailyPerformersGroup.h */,
+				B0CCFAD21DC37BDE00B257AB /* CalendarDataLoaderDailyPerformersGroup.m */,
+				B059DC571DC8A48100ECD62D /* CalendarDataLoaderDailyServicesGroup.h */,
+				B059DC581DC8A48100ECD62D /* CalendarDataLoaderDailyServicesGroup.m */,
+				B050B6C11DC78F1700CBCEBE /* CalendarDataLoaderWeeklyGroup.h */,
+				B050B6C21DC78F1700CBCEBE /* CalendarDataLoaderWeeklyGroup.m */,
+				B050B6C41DC7A29100CBCEBE /* CalendarDataProcessors.h */,
+				B050B6C51DC7A29100CBCEBE /* CalendarDataProcessors.m */,
+				B0CCFAD71DC3882600B257AB /* CalendarBookingPresenter.h */,
+				B0CCFAD81DC3882600B257AB /* CalendarBookingPresenter.m */,
 			);
 			name = Calendar;
 			sourceTree = "<group>";
@@ -896,6 +941,10 @@
 				B0D071CC1CC7C6B600F14BAB /* SBGetServiceUrlRequest.m */,
 				B0D733AA1D05C151000FBF5C /* SBGetCurrentUserDetailsRequest.h */,
 				B0D733AB1D05C151000FBF5C /* SBGetCurrentUserDetailsRequest.m */,
+				B0B81E2B1D4F75B6009FB06B /* SBSetBookingCommentRequest.h */,
+				B0B81E2C1D4F75B6009FB06B /* SBSetBookingCommentRequest.m */,
+				B0B81E2F1D4F7701009FB06B /* SBGetBookingCommentRequest.h */,
+				B0B81E301D4F7701009FB06B /* SBGetBookingCommentRequest.m */,
 			);
 			path = Requests;
 			sourceTree = "<group>";
@@ -1026,8 +1075,6 @@
 				B06DD7C41BA1C5A4006FD0A5 /* LSWeekCollectionViewCell.h */,
 				B06DD7C51BA1C5A4006FD0A5 /* LSWeekCollectionViewCell.m */,
 				B06DD7C61BA1C5A4006FD0A5 /* LSWeekCollectionViewCell.xib */,
-				B06AB3921CA580FD00009319 /* CalendarBookingsViewController.h */,
-				B06AB3931CA580FE00009319 /* CalendarBookingsViewController.m */,
 				B02033B91BE8F18C0029B38A /* CalendarDayViewController.h */,
 				B02033BA1BE8F18C0029B38A /* CalendarDayViewController.m */,
 				B09FC4201BEA467700D1024D /* CalendarWeekViewController.h */,
@@ -1097,6 +1144,7 @@
 		B0F90A2C1B83415F00929D3C /* ios-admin-application */ = {
 			isa = PBXGroup;
 			children = (
+				B0D452211D902743003F58B5 /* SimplyBook.me.entitlements */,
 				B00FB01F1B96E6540081ADB4 /* Libs */,
 				B0A106A01B8478FB00E58C1C /* Server */,
 				B0CCB1BD1CA3E8C900AB39BB /* LocalStorage */,
@@ -1141,10 +1189,15 @@
 				B0CCB0131B8CC3CB00A55E0C /* Booking Details */,
 				B049B18C1C9AEC23001BD7C9 /* AgendaViewController.h */,
 				B049B18D1C9AEC23001BD7C9 /* AgendaViewController.m */,
+				B0CF107F1DD1D024001AECA8 /* TermsAndConditionsController.h */,
+				B0CF10801DD1D024001AECA8 /* TermsAndConditionsController.m */,
 				B0F90A371B83415F00929D3C /* Main.storyboard */,
+				B02B18A41DC8897B00F7A548 /* CalendarDailyPerformersView.storyboard */,
+				B02B18A11DC8890F00F7A548 /* CalendarWeekView.storyboard */,
 				B04403731BE36A72003DFD83 /* BookingDetails.storyboard */,
 				B0B658771BDFCF79003351D8 /* AddEditBooking.storyboard */,
 				B0B658741BDFCE50003351D8 /* CalendarFilter.storyboard */,
+				B0CF107C1DD1CF75001AECA8 /* TermsAndConditions.storyboard */,
 				B077928F1BB19078001141EA /* SimplyBookTabBarController.h */,
 				B07792901BB19078001141EA /* SimplyBookTabBarController.m */,
 				B02C895E1BEA03EE00C6AEFC /* SwipeContainerViewController.h */,
@@ -1268,12 +1321,17 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Michail Grebionkin";
 				TargetAttributes = {
 					B0F90A291B83415F00929D3C = {
 						CreatedOnToolsVersion = 6.4;
 						DevelopmentTeam = E5G8VCRAJR;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 					B0F90A421B83415F00929D3C = {
 						CreatedOnToolsVersion = 6.4;
@@ -1315,12 +1373,15 @@
 				B0F90A391B83415F00929D3C /* Main.storyboard in Resources */,
 				B0B658761BDFCE50003351D8 /* CalendarFilter.storyboard in Resources */,
 				B03011711BFC9B7600CB63FA /* BookingApproveStatusTableViewCell.xib in Resources */,
+				B02B18A61DC8897B00F7A548 /* CalendarDailyPerformersView.storyboard in Resources */,
 				B00FB0231B96E6540081ADB4 /* DiallingCodes.plist in Resources */,
 				B0F90A3E1B83415F00929D3C /* LaunchScreen.xib in Resources */,
 				B0E0054F1B8622C3006801D3 /* BookingCollectionViewCell.xib in Resources */,
 				B0B263FB1BB44F04007C1F77 /* SegmentedWidgetHeaderCollectionReusableView.xib in Resources */,
 				B04403751BE36A72003DFD83 /* BookingDetails.storyboard in Resources */,
+				B02B18A31DC8890F00F7A548 /* CalendarWeekView.storyboard in Resources */,
 				B0CB15B01BC2B48800132E52 /* MessageCollectionReusableView.xib in Resources */,
+				B0CF107E1DD1CF75001AECA8 /* TermsAndConditions.storyboard in Resources */,
 				B0F0AF981BB966A00043490C /* VerticalKeyValueCollectionViewCell.xib in Resources */,
 				B0FE956C1BBD73B800C964A7 /* HorizontalKeyValueCollectionViewCell.xib in Resources */,
 				B0F90A6B1B838B0400929D3C /* ACHTextFieldTableViewCell.xib in Resources */,
@@ -1368,6 +1429,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0CCFAD01DC37BBE00B257AB /* CalendarDataLoaderFactory.m in Sources */,
 				B0A106B11B84792900E58C1C /* SBSessionManager.m in Sources */,
 				B0F90A361B83415F00929D3C /* InitialViewController.m in Sources */,
 				B0F90A331B83415F00929D3C /* AppDelegate.m in Sources */,
@@ -1459,6 +1521,8 @@
 				B0D071CD1CC7C6B600F14BAB /* SBGetServiceUrlRequest.m in Sources */,
 				B03D87331B875BA900FCF24D /* SBGetCompanyInfo.m in Sources */,
 				B05CFDFA1BC67DD500D26E52 /* ACHAdditionalFieldsDataSource.m in Sources */,
+				B050B6C61DC7A29100CBCEBE /* CalendarDataProcessors.m in Sources */,
+				B0CCFAD31DC37BDE00B257AB /* CalendarDataLoaderDailyPerformersGroup.m in Sources */,
 				B0BD4A4C1D06B5C800634679 /* SBUser.m in Sources */,
 				B00FB02A1B96F5430081ADB4 /* SBGetAdditionalFieldsRequest.m in Sources */,
 				B0FE95641BBD5E3500C964A7 /* DashboardTopChartWidget.m in Sources */,
@@ -1474,9 +1538,10 @@
 				B0F90A301B83415F00929D3C /* main.m in Sources */,
 				B01283671B8F04AB0097AD29 /* SBCache.m in Sources */,
 				B03CECB81B9F2AC70006AC01 /* SBEditBookRequest.m in Sources */,
-				B06AB3941CA580FE00009319 /* CalendarBookingsViewController.m in Sources */,
 				B06AB3911CA537FC00009319 /* SBReachability.m in Sources */,
 				B0ADBCD71C9C02A000F2D510 /* AgendaCollectionViewLayout.m in Sources */,
+				B0B81E311D4F7701009FB06B /* SBGetBookingCommentRequest.m in Sources */,
+				B0B81E2D1D4F75B6009FB06B /* SBSetBookingCommentRequest.m in Sources */,
 				B030116C1BFC6F7100CB63FA /* PendingBookingsCollectionViewLayout.m in Sources */,
 				B0A106BA1B848AF200E58C1C /* SBResponse.m in Sources */,
 				B0CCAFF21B8C572D00A55E0C /* BookingDetailsViewController.m in Sources */,
@@ -1486,6 +1551,7 @@
 				B0B263FA1BB44F04007C1F77 /* SegmentedWidgetHeaderCollectionReusableView.m in Sources */,
 				B0AC2F2F1CA40B3E001A6688 /* LSBookingStatus.m in Sources */,
 				B0FE956B1BBD73B800C964A7 /* HorizontalKeyValueCollectionViewCell.m in Sources */,
+				B059DC591DC8A48100ECD62D /* CalendarDataLoaderDailyServicesGroup.m in Sources */,
 				B01283701B8F5C340097AD29 /* AddBookingViewController.m in Sources */,
 				B00FB0271B96E8BE0081ADB4 /* SBAddClientRequest.m in Sources */,
 				B0E0053E1B85D2C0006801D3 /* SBGetBookingsRequest.m in Sources */,
@@ -1509,14 +1575,17 @@
 				B03E9FA21BBE7A59002320A0 /* XYPieChart.m in Sources */,
 				B00FB0451B97253D0081ADB4 /* SBValidator.m in Sources */,
 				B0AC2F311CA40B3E001A6688 /* LSPerformer.m in Sources */,
+				B0CF10811DD1D024001AECA8 /* TermsAndConditionsController.m in Sources */,
 				B0A106B41B84796400E58C1C /* SBSession.m in Sources */,
 				B049B18E1C9AEC23001BD7C9 /* AgendaViewController.m in Sources */,
+				B050B6C31DC78F1700CBCEBE /* CalendarDataLoaderWeeklyGroup.m in Sources */,
 				B089A3FE1BB599FA0022AB71 /* ActivityIndicatorCollectionReusableView.m in Sources */,
 				B0AA7C641BCD3234009D4DE1 /* TextCollectionReusableView.m in Sources */,
 				B0DC388D1BB93ACD00BA1137 /* DashboardTariffWidget.m in Sources */,
 				B0AF20F11B8DF90F009F3EB6 /* FilterViewController.m in Sources */,
 				B0E4C9A71BFA13F600013FAB /* SBPluginApproveGetPendingBookingsRequest.m in Sources */,
 				B04945411B984A2E00F7B9D1 /* SBSettings.m in Sources */,
+				B0CCFAD91DC3882600B257AB /* CalendarBookingPresenter.m in Sources */,
 				B05CFDF11BC67C7A00D26E52 /* SBDateRange.m in Sources */,
 				B00FB04E1B972B1C0081ADB4 /* SBServerIDValidator.m in Sources */,
 				B0AC2F301CA40B3E001A6688 /* LSPerformer+CoreDataProperties.m in Sources */,
@@ -1556,7 +1625,9 @@
 				B0CBE0F41BF3657B00783450 /* SBBookingInfo.m in Sources */,
 				B0E4C9B41BFA26A000013FAB /* SBResultProcessor.m in Sources */,
 				B0CB55A31BFDBBB6008BB0B4 /* SBBookingStatusesCollection.m in Sources */,
+				B0B81E321D4F7701009FB06B /* SBGetBookingCommentRequest.m in Sources */,
 				B09398A01C0363270035D31F /* SBService.m in Sources */,
+				B0B81E2E1D4F75B6009FB06B /* SBSetBookingCommentRequest.m in Sources */,
 				B06C452F1C722E680038835E /* SBGetGoogleCalendarBusyTimeRequest.m in Sources */,
 				B0CBE0F11BF3616B00783450 /* SBPluginsRepository.m in Sources */,
 			);
@@ -1573,6 +1644,22 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		B02B18A11DC8890F00F7A548 /* CalendarWeekView.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B02B18A21DC8890F00F7A548 /* Base */,
+			);
+			name = CalendarWeekView.storyboard;
+			sourceTree = "<group>";
+		};
+		B02B18A41DC8897B00F7A548 /* CalendarDailyPerformersView.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B02B18A51DC8897B00F7A548 /* Base */,
+			);
+			name = CalendarDailyPerformersView.storyboard;
+			sourceTree = "<group>";
+		};
 		B04403731BE36A72003DFD83 /* BookingDetails.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -1595,6 +1682,14 @@
 				B0B658781BDFCF79003351D8 /* Base */,
 			);
 			name = AddEditBooking.storyboard;
+			sourceTree = "<group>";
+		};
+		B0CF107C1DD1CF75001AECA8 /* TermsAndConditions.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B0CF107D1DD1CF75001AECA8 /* Base */,
+			);
+			name = TermsAndConditions.storyboard;
 			sourceTree = "<group>";
 		};
 		B0F90A371B83415F00929D3C /* Main.storyboard */ = {
@@ -1629,8 +1724,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -1653,7 +1750,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
@@ -1674,8 +1771,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -1691,11 +1790,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "";
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -1705,7 +1805,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "ios-admin-application/SimplyBook.me.entitlements";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = E5G8VCRAJR;
 				GCC_PREFIX_HEADER = "ios-admin-application/PrefixHeader.pch";
 				INFOPLIST_FILE = "ios-admin-application/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -1713,6 +1816,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "is.notando.SimplyBook-me";
 				PRODUCT_NAME = SimplyBook.me;
+				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "ios-admin-application/LocalStorage/ios-admin-application-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1724,7 +1828,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_ENTITLEMENTS = "ios-admin-application/SimplyBook.me.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = E5G8VCRAJR;
 				GCC_PREFIX_HEADER = "ios-admin-application/PrefixHeader.pch";
 				INFOPLIST_FILE = "ios-admin-application/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -1732,6 +1839,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "is.notando.SimplyBook-me";
 				PRODUCT_NAME = SimplyBook.me;
+				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "ios-admin-application/LocalStorage/ios-admin-application-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
